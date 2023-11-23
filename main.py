@@ -135,8 +135,10 @@ def show_post(post_id):
             author=current_user,
             parent_post=requested_post
         )
+
         db.session.add(new_comment)
         db.session.commit()
+
     return render_template("post.html", post=requested_post, form = form)
 
 @app.route("/new-post", methods=["GET", "POST"])
@@ -191,11 +193,19 @@ def delete_post(post_id):
     db.session.commit()
     return redirect(url_for('get_all_posts'))
 
+@app.route("/delete-comment/<int:comment_id>")
+@login_required
+@admin_required # Only an admin user can delete a comment
+def delete_comment(comment_id):
+    comment_to_delete = db.get_or_404(Comment, comment_id)
+    db.session.delete(comment_to_delete)
+    db.session.commit()
+
+    return redirect(url_for('get_all_posts'))
 
 @app.route("/about")
 def about():
     return render_template("about.html")
-
 
 @app.route("/contact")
 def contact():
@@ -205,7 +215,7 @@ def contact():
 @login_required
 @admin_required
 def admin_panel():
-    return 'Hola soy el admin'
+    return render_template('admin.html')
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

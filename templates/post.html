@@ -49,6 +49,9 @@
                 <span class="date sub-text">{{comment.author.name}}</span>
               </div>
             </li>
+              {%if current_user.id == 1 %}
+                <a href="">✘</a>
+              {%endif%}
             {%endfor%}
           </ul>
         </div>
