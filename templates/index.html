@@ -22,22 +22,34 @@
     <div class="col-md-10 col-lg-8 col-xl-7">
       <!-- Post preview-->
       {% for post in all_posts %}
+      
       <div class="post-preview">
-        <a href="{{ url_for('show_post', post_id=post.id) }}">
-          <h2 class="post-title">{{ post.title }}</h2>
-          <h3 class="post-subtitle">{{ post.subtitle }}</h3>
-        </a>
-        <p class="post-meta">
-          Posted by
-          <a href="#">{{post.author.name}}</a>
-          on {{post.date}}
-          <!-- Only show delete button if user id is 1 (admin user) -->
-          {%if current_user.id == 1 %}
-          <a href="{{url_for('delete_post', post_id=post.id) }}">✘</a>
-          {%endif%}
-        </p>
-      </div>
-      <!-- Divider-->
+        <ul class="list-inline">
+
+          <li class="list-inline-item">
+            <a href="{{ url_for('show_post', post_id=post.id) }}">  
+              <h2 class="post-title">{{ post.title }}</h2>
+              <h3 class="post-subtitle">{{ post.subtitle }}</h3>
+            </a>
+            <p class="post-meta">
+              Posted by
+              <a href="#">{{post.author.name}}</a>
+              on {{post.date}}
+              <!-- Only show delete button if user id is 1 (admin user) -->
+              {%if current_user.id == 1 %}
+              <a href="{{url_for('delete_post', post_id=post.id) }}">✘</a>
+              {%endif%}
+            </p>
+          </li>        
+
+          <li class="list-inline-item text-end">
+            <img class="rounded float-end" src="{{post.img_url}}" style="width: 10rem;"></img>
+          </li>  
+
+        </ul>
+
+        </div>
+        <!-- Divider-->
       <hr class="my-4" />
       {% endfor %}
 
