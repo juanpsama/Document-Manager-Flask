@@ -182,8 +182,6 @@ def edit_post(post_id):
         return redirect(url_for("show_post", post_id=post.id))
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
-
-
 @app.route("/delete/<int:post_id>")
 @login_required
 @admin_required # Only an admin user can delete a post
@@ -203,6 +201,38 @@ def delete_comment(comment_id):
     db.session.commit()
     return redirect(url_for('show_post', post_id = parent_id))
 
+@app.route('/users')
+@login_required
+@admin_required
+def users_panel():
+    result = db.session.execute(db.select(User))
+    users = result.scalars().all()
+    return render_template('users.html', all_users = users)
+
+@app.route('/users/edit/<int:user_id>', methods = ['GET', 'POST'])
+def edit_user(user_id):
+    user = db.get_or_404(User, user_id)
+    edit_form = RegisterForm(
+        name = user.name,
+        email = user.email
+    )
+    if edit_form.validate_on_submit():
+        user.name = edit_form.name.data
+        user.email = edit_form.email.data
+        
+        user.password = generate_password_hash(password=edit_form.password.data, method='pbkdf2:sha256', salt_length=8) 
+        db.session.commit()
+        return redirect(url_for("users_panel"))
+    return render_template("register.html", form=edit_form)
+
+@app.route('/users/delete/<int:user_id>')
+def delete_user(user_id):
+    user_to_delete = db.get_or_404(User, user_id)
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    flash('User removed')
+    return redirect(url_for('users_panel'))
+
 @app.route("/about")
 def about():
     return render_template("about.html")
@@ -210,15 +240,6 @@ def about():
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
-
-@app.route('/users')
-@login_required
-@admin_required
-def users_panel():
-    result = db.session.execute(db.select(User))
-    users = result.scalars().all()
-    print(users)
-    return render_template('users.html', all_users = users)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
