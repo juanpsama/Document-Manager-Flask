@@ -211,14 +211,14 @@ def about():
 def contact():
     return render_template("contact.html")
 
-@app.route('/admin')
+@app.route('/users')
 @login_required
 @admin_required
-def admin_panel():
+def users_panel():
     result = db.session.execute(db.select(User))
     users = result.scalars().all()
     print(users)
-    return render_template('admin.html', all_users = users)
+    return render_template('users.html', all_users = users)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

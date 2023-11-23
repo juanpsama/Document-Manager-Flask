@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  <title>JPG's Blog</title>
+  <title>Jpg's Blog</title>
   {% block styles %}
   <!-- Load Bootstrap-Flask CSS here -->
   {{ bootstrap.load_css() }}
@@ -42,8 +42,8 @@
           </li>
           {%if current_user.id == 1%}
           <li class="nav-item">
-            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('admin_panel') }}">
-              Admin
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('users_panel') }}">
+              Users
             </a>
           </li>
           {%endif%}
