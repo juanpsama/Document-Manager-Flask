@@ -31,29 +31,30 @@
         </div>
         {%endif%}
 
-        <!-- Comments Area -->
-        {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
-        {{render_form(form)}}
         <div class="comment">
           <!-- Show all the comments on a post -->
           <ul class="commentList">
             {%for comment in post.comments:%}
             <li>
               <div class="commenterImage">
-
+                
                 <img src={{ 'comment.author.email' | gravatar }} />
               </div>
-
               <div class="commentText">
                 <p>{{comment.text | safe}}</p>
                 <span class="date sub-text">{{comment.author.name}}</span>
               </div>
             </li>
-              {%if current_user.id == 1 %}
-                <a href="">✘</a>
-              {%endif%}
+            {%if current_user.id == 1 %}
+            <a href="{{url_for('delete_comment', comment_id=comment.id) }}">Delete Comment ✘</a>
+            {%endif%}
             {%endfor%}
           </ul>
+        </div>
+        <div class="container my-2">
+          <!-- Comments Area -->
+          {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
+          {{render_form(form)}}
         </div>
       </div>
     </div>

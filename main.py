@@ -198,10 +198,10 @@ def delete_post(post_id):
 @admin_required # Only an admin user can delete a comment
 def delete_comment(comment_id):
     comment_to_delete = db.get_or_404(Comment, comment_id)
+    parent_id = comment_to_delete.post_id
     db.session.delete(comment_to_delete)
     db.session.commit()
-
-    return redirect(url_for('get_all_posts'))
+    return redirect(url_for('show_post', post_id = parent_id))
 
 @app.route("/about")
 def about():
