@@ -143,7 +143,6 @@ def show_post(post_id):
 
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
-@admin_required # Only an admin user can create a new post
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
@@ -209,6 +208,8 @@ def users_panel():
     users = result.scalars().all()
     return render_template('users.html', all_users = users)
 
+@login_required
+@admin_required
 @app.route('/users/edit/<int:user_id>', methods = ['GET', 'POST'])
 def edit_user(user_id):
     user = db.get_or_404(User, user_id)
@@ -225,12 +226,14 @@ def edit_user(user_id):
         return redirect(url_for("users_panel"))
     return render_template("register.html", form=edit_form)
 
+@login_required
+@admin_required
 @app.route('/users/delete/<int:user_id>')
 def delete_user(user_id):
     user_to_delete = db.get_or_404(User, user_id)
     db.session.delete(user_to_delete)
     db.session.commit()
-    flash('User removed')
+    # flash('User removed')
     return redirect(url_for('users_panel'))
 
 @app.route("/about")
