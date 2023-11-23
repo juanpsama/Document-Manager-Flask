@@ -215,7 +215,10 @@ def contact():
 @login_required
 @admin_required
 def admin_panel():
-    return render_template('admin.html')
+    result = db.session.execute(db.select(User))
+    users = result.scalars().all()
+    print(users)
+    return render_template('admin.html', all_users = users)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
