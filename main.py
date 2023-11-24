@@ -45,6 +45,14 @@ gravatar = Gravatar(app,
 login_manager = LoginManager()
 login_manager.init_app(app) 
 
+def redirect_unauthorized():
+    flash('You have to register or login !!')
+    return redirect(url_for('register'))
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    redirect_unauthorized()
+
 # Create a user_loader callback
 @login_manager.user_loader
 def load_user(user_id):
@@ -127,8 +135,7 @@ def show_post(post_id):
 
         # Allow only logged-in users to comment on posts
         if not current_user.is_authenticated:
-            flash("You need to login or register to comment.")  
-            return redirect(url_for("login"))
+           redirect_unauthorized()
         
         new_comment = Comment(
             text=form.body.data,
