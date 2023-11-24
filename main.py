@@ -51,7 +51,8 @@ def redirect_unauthorized():
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    redirect_unauthorized()
+    #return 'goog'
+    return redirect_unauthorized()
 
 # Create a user_loader callback
 @login_manager.user_loader
@@ -132,7 +133,6 @@ def show_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
     form = CommentForm()
     if form.validate_on_submit():
-
         # Allow only logged-in users to comment on posts
         if not current_user.is_authenticated:
            redirect_unauthorized()
