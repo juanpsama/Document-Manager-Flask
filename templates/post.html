@@ -6,7 +6,7 @@
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="post-heading">
-          <h1>{{ post.title }}</h1>
+          <h1>{{ post.folio}}</h1>
           <h2 class="subheading">{{ post.subtitle }}</h2>
           <span class="meta">Posted by
             <a href="#">{{ post.author.name }}</a>
@@ -23,7 +23,34 @@
   <div class="container px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
-        {{ post.body|safe }}
+        <ul>
+          <li>
+            {{ post.document_type }}
+          </li>
+          <li>
+            {{ post.payment_date }}
+          </li>
+          <li>
+            {{ post.bill_date }}
+          </li>
+          <li>
+            {{ post.bill_concept }}
+          </li>
+          <li>
+            {{ post.description }}
+          </li>
+          <li>
+            <!-- This should be replaced with a pdf renderer or a pdf icon -->
+            <h4>Bill PDF</h4>
+            <img src="{{url_for('static', filename = post.bill_pdf)}}" alt="" height="300">
+            
+            <h4>Bill Image client</h4>
+            <img src="{{url_for('static',filename = post.client_deposit_image)}}" alt="" height="300">
+
+            <h4>Bill Image</h4>
+            <img src="{{url_for('static',filename = post.deposit_image)}}" alt="" height="300">
+          </li  >
+        </ul>
         <!--Only show Edit Post button if user id is 1 (admin user) -->
         {%if current_user.id == 1%}
         <div class="d-flex justify-content-end mb-4">
@@ -51,11 +78,11 @@
             {%endfor%}
           </ul>
         </div>
-        <div class="container my-2">
+         <!-- <div class="container my-2"> -->
           <!-- Comments Area -->
-          {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
+          <!-- {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
           {{render_form(form)}}
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

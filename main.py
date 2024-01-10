@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 import os 
 
 from flask import Flask, abort, render_template, redirect, url_for, flash
@@ -7,30 +7,48 @@ from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
 from flask_login import login_user, LoginManager, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
+from flask_uploads import UploadSet, IMAGES, configure_uploads
+
 
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # Import your forms from the forms.py
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+from forms import CreateBillForm, RegisterForm, LoginForm, CommentForm, images
 # Import db models from the models.py
-from models import User, BlogPost, Comment
-
-
+from models import User, Bill, Tag,  db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
+app.config['UPLOADS_DEFAULT_DEST'] =  'static/files/'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
+configure_uploads(app, (images, ))
+
 # CONNECT TO DB
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
-db = SQLAlchemy()
+# db = SQLAlchemy()
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
+    try: 
+        hash_password = generate_password_hash(password='name', method='pbkdf2:sha256', salt_length=8)
+        new_user = User(
+        email = 'jp@mail.com',
+        password = hash_password, 
+        name='name', 
+        is_admin = True
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+    except:
+        print('there is a admin already')
+        pass
+
 
 gravatar = Gravatar(app,
                     size=100,
@@ -47,7 +65,7 @@ login_manager.init_app(app)
 
 def redirect_unauthorized():
     flash('You have to register or login !!')
-    return redirect(url_for('register'))
+    return redirect(url_for('login'))
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -64,7 +82,7 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         #The first user register is set as the admin 
-        if current_user.id != 1:
+        if not current_user.is_admin:
             return abort(404)
         return f(*args, **kwargs)
     return decorated_function
@@ -122,46 +140,69 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 @app.route('/')
+def redirect_main():
+    return redirect(url_for('login'))
+
+@app.route('/all_bills')
+@login_required
 def get_all_posts():
-    result = db.session.execute(db.select(BlogPost))
+    result = db.session.execute(db.select(Bill))
     posts = result.scalars().all()
     return render_template("index.html", all_posts=posts)
 
 ## CRUD operations on BLOG-POSTS
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
+@login_required
 def show_post(post_id):
-    requested_post = db.get_or_404(BlogPost, post_id)
+    requested_post = db.get_or_404(Bill, post_id)
     form = CommentForm()
     if form.validate_on_submit():
         # Allow only logged-in users to comment on posts
         if not current_user.is_authenticated:
            redirect_unauthorized()
         
-        new_comment = Comment(
-            text=form.body.data,
-            author=current_user,
-            parent_post=requested_post
-        )
+        # new_comment = Comment(
+        #     text=form.body.data,
+        #     author=current_user,
+        #     parent_post=requested_post
+        # )
 
-        db.session.add(new_comment)
-        db.session.commit()
+        # db.session.add(new_comment)
+        # db.session.commit()
 
     return render_template("post.html", post=requested_post, form = form)
 
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 def add_new_post():
-    form = CreatePostForm()
+    form = CreateBillForm()
     if form.validate_on_submit():
-        new_post = BlogPost(
-            title=form.title.data,
-            subtitle=form.subtitle.data,
-            body=form.body.data,
-            img_url=form.img_url.data,
-            author=current_user,
-            date=date.today().strftime("%B %d, %Y")
+        
+        bill_file_pdf = form.bill_file_pdf.data
+        client_deposit_image = form.client_file_image.data
+        deposit_image = form.deposit_file_image.data
+
+        bill_file_pdf_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], bill_file_pdf.filename)
+        client_deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], client_deposit_image.filename)
+        deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], deposit_image.filename)
+
+        bill_file_pdf.save(bill_file_pdf_path)
+        client_deposit_image.save(client_deposit_image_path)
+        deposit_image.save(deposit_image_path)
+
+        new_bill = Bill(
+            author = current_user,
+            folio = str(datetime.now()).replace(' ', '_'),
+            document_type = form.document_type.data,
+            payment_date = form.payment_date.data,
+            bill_date = form.bill_date.data,
+            bill_concept = form.bill_concept.data,
+            description = form.description.data,
+            bill_pdf = bill_file_pdf_path.replace('static/',''),
+            client_deposit_image = client_deposit_image_path.replace('static/',''),
+            deposit_image = deposit_image_path.replace('static/','') 
         )
-        db.session.add(new_post)
+        db.session.add(new_bill)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
     return render_template("make-post.html", form=form)
@@ -170,8 +211,8 @@ def add_new_post():
 @login_required
 @admin_required # Only an admin user can edit a post
 def edit_post(post_id):
-    post = db.get_or_404(BlogPost, post_id)
-    edit_form = CreatePostForm(
+    post = db.get_or_404(Bill, post_id)
+    edit_form = CreateBillForm(
         title=post.title,
         subtitle=post.subtitle,
         img_url=post.img_url,
@@ -192,7 +233,7 @@ def edit_post(post_id):
 @login_required
 @admin_required # Only an admin user can delete a post
 def delete_post(post_id):
-    post_to_delete = db.get_or_404(BlogPost, post_id)
+    post_to_delete = db.get_or_404(Bill, post_id)
     db.session.delete(post_to_delete)
     db.session.commit()
     return redirect(url_for('get_all_posts'))
@@ -201,11 +242,11 @@ def delete_post(post_id):
 @login_required
 @admin_required # Only an admin user can delete a comment
 def delete_comment(comment_id):
-    comment_to_delete = db.get_or_404(Comment, comment_id)
-    parent_id = comment_to_delete.post_id
-    db.session.delete(comment_to_delete)
-    db.session.commit()
-    return redirect(url_for('show_post', post_id = parent_id))
+    # comment_to_delete = db.get_or_404(Comment, comment_id)
+    # parent_id = comment_to_delete.post_id
+    # db.session.delete(comment_to_delete)
+    # db.session.commit()
+    return redirect(url_for('show_post', post_id = 1))
 
 @app.route('/users')
 @login_required
@@ -243,13 +284,15 @@ def delete_user(user_id):
     # flash('User removed')
     return redirect(url_for('users_panel'))
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
+@login_required
+@admin_required
+@app.route('/users/change_admin/<int:user_id>')
+def change_admin(user_id):
+    user = db.get_or_404(User, user_id)
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    
+    return redirect(url_for('users_panel'))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

@@ -1,4 +1,5 @@
 #Project specifics
+/static/files
 /instance/posts.db
 /.vscode
 
