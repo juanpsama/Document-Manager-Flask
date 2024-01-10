@@ -3,28 +3,23 @@ import os
 
 from flask import Flask, abort, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap5
-from flask_ckeditor import CKEditor
-from flask_gravatar import Gravatar
 from flask_login import login_user, LoginManager, current_user, logout_user, login_required
-from flask_sqlalchemy import SQLAlchemy
-from flask_uploads import UploadSet, IMAGES, configure_uploads
-
+from flask_uploads import configure_uploads
 
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
 # Import your forms from the forms.py
-from forms import CreateBillForm, RegisterForm, LoginForm, CommentForm, images
+from forms import CreateBillForm, RegisterForm, LoginForm, TagForm, images
 # Import db models from the models.py
 from models import User, Bill, Tag,  db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
-app.config['UPLOADS_DEFAULT_DEST'] =  'static/files/'
-ckeditor = CKEditor(app)
 Bootstrap5(app)
 
+# This is for config where the files should be stored
+app.config['UPLOADS_DEFAULT_DEST'] =  'static/files/'
 configure_uploads(app, (images, ))
 
 # CONNECT TO DB
@@ -48,16 +43,6 @@ with app.app_context():
     except:
         print('there is a admin already')
         pass
-
-
-gravatar = Gravatar(app,
-                    size=100,
-                    rating='g',
-                    default='retro',
-                    force_default=False,
-                    force_lower=False,
-                    use_ssl=False,
-                    base_url=None)
 
 # Configure Flask-Login
 login_manager = LoginManager()
@@ -87,7 +72,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-## Login and register routes
+## User operations
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -143,111 +128,7 @@ def logout():
 def redirect_main():
     return redirect(url_for('login'))
 
-@app.route('/all_bills')
-@login_required
-def get_all_posts():
-    result = db.session.execute(db.select(Bill))
-    posts = result.scalars().all()
-    return render_template("index.html", all_posts=posts)
-
-## CRUD operations on BLOG-POSTS
-@app.route("/post/<int:post_id>", methods=["GET", "POST"])
-@login_required
-def show_post(post_id):
-    requested_post = db.get_or_404(Bill, post_id)
-    form = CommentForm()
-    if form.validate_on_submit():
-        # Allow only logged-in users to comment on posts
-        if not current_user.is_authenticated:
-           redirect_unauthorized()
-        
-        # new_comment = Comment(
-        #     text=form.body.data,
-        #     author=current_user,
-        #     parent_post=requested_post
-        # )
-
-        # db.session.add(new_comment)
-        # db.session.commit()
-
-    return render_template("post.html", post=requested_post, form = form)
-
-@app.route("/new-post", methods=["GET", "POST"])
-@login_required
-def add_new_post():
-    form = CreateBillForm()
-    if form.validate_on_submit():
-        
-        bill_file_pdf = form.bill_file_pdf.data
-        client_deposit_image = form.client_file_image.data
-        deposit_image = form.deposit_file_image.data
-
-        bill_file_pdf_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], bill_file_pdf.filename)
-        client_deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], client_deposit_image.filename)
-        deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], deposit_image.filename)
-
-        bill_file_pdf.save(bill_file_pdf_path)
-        client_deposit_image.save(client_deposit_image_path)
-        deposit_image.save(deposit_image_path)
-
-        new_bill = Bill(
-            author = current_user,
-            folio = str(datetime.now()).replace(' ', '_'),
-            document_type = form.document_type.data,
-            payment_date = form.payment_date.data,
-            bill_date = form.bill_date.data,
-            bill_concept = form.bill_concept.data,
-            description = form.description.data,
-            bill_pdf = bill_file_pdf_path.replace('static/',''),
-            client_deposit_image = client_deposit_image_path.replace('static/',''),
-            deposit_image = deposit_image_path.replace('static/','') 
-        )
-        db.session.add(new_bill)
-        db.session.commit()
-        return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form)
-
-@app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
-@login_required
-@admin_required # Only an admin user can edit a post
-def edit_post(post_id):
-    post = db.get_or_404(Bill, post_id)
-    edit_form = CreateBillForm(
-        title=post.title,
-        subtitle=post.subtitle,
-        img_url=post.img_url,
-        author=post.author,
-        body=post.body
-    )
-    if edit_form.validate_on_submit():
-        post.title = edit_form.title.data
-        post.subtitle = edit_form.subtitle.data
-        post.img_url = edit_form.img_url.data
-        post.author = current_user
-        post.body = edit_form.body.data
-        db.session.commit()
-        return redirect(url_for("show_post", post_id=post.id))
-    return render_template("make-post.html", form=edit_form, is_edit=True)
-
-@app.route("/delete/<int:post_id>")
-@login_required
-@admin_required # Only an admin user can delete a post
-def delete_post(post_id):
-    post_to_delete = db.get_or_404(Bill, post_id)
-    db.session.delete(post_to_delete)
-    db.session.commit()
-    return redirect(url_for('get_all_posts'))
-
-@app.route("/delete-comment/<int:comment_id>")
-@login_required
-@admin_required # Only an admin user can delete a comment
-def delete_comment(comment_id):
-    # comment_to_delete = db.get_or_404(Comment, comment_id)
-    # parent_id = comment_to_delete.post_id
-    # db.session.delete(comment_to_delete)
-    # db.session.commit()
-    return redirect(url_for('show_post', post_id = 1))
-
+# CRUD operations for users
 @app.route('/users')
 @login_required
 @admin_required
@@ -293,6 +174,114 @@ def change_admin(user_id):
     db.session.commit()
     
     return redirect(url_for('users_panel'))
+
+
+## Operations for the bills
+@app.route('/all_bills')
+@login_required
+def get_all_posts():
+    result = db.session.execute(db.select(Bill))
+    posts = result.scalars().all()
+    return render_template("index.html", all_posts=posts)
+
+@app.route("/bill/<int:post_id>", methods=["GET", "POST"])
+@login_required
+def show_post(post_id):
+    requested_post = db.get_or_404(Bill, post_id)
+    form = TagForm()
+    if form.validate_on_submit():
+        # Allow only logged-in users to comment on posts
+        if not current_user.is_authenticated:
+           redirect_unauthorized()
+        
+        # new_comment = Comment(
+        #     text=form.body.data,
+        #     author=current_user,
+        #     parent_post=requested_post
+        # )
+
+        # db.session.add(new_comment)
+        # db.session.commit()
+
+    return render_template("post.html", post=requested_post, form = form)
+
+@app.route("/new-bill", methods=["GET", "POST"])
+@login_required
+def add_new_post():
+    form = CreateBillForm()
+    if form.validate_on_submit():
+        
+        # the multiple file field returns a list of files 
+        bill_file_pdf = form.bill_file_pdf.data
+        # print(bill_file_pdf)  
+        client_deposit_image = form.client_file_image.data
+        deposit_image = form.deposit_file_image.data
+
+        bill_file_pdf_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], bill_file_pdf.filename)
+        client_deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], client_deposit_image.filename)
+        deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], deposit_image.filename)
+
+        bill_file_pdf.save(bill_file_pdf_path)
+        client_deposit_image.save(client_deposit_image_path)
+        deposit_image.save(deposit_image_path)
+
+        new_bill = Bill(
+            author = current_user,
+            folio = str(datetime.now()).replace(' ', '_'),
+            document_type = form.document_type.data,
+            payment_date = form.payment_date.data,
+            bill_date = form.bill_date.data,
+            bill_concept = form.bill_concept.data,
+            description = form.description.data,
+            bill_pdf = bill_file_pdf_path.replace('static/',''),
+            client_deposit_image = client_deposit_image_path.replace('static/',''),
+            deposit_image = deposit_image_path.replace('static/','') 
+        )
+        db.session.add(new_bill)
+        db.session.commit()
+        return redirect(url_for("get_all_posts"))
+    return render_template("make-post.html", form=form)
+
+@app.route("/edit-bill/<int:post_id>", methods=["GET", "POST"])
+@login_required
+@admin_required # Only an admin user can edit a post
+def edit_post(post_id):
+    post = db.get_or_404(Bill, post_id)
+    edit_form = CreateBillForm(
+        title=post.title,
+        subtitle=post.subtitle,
+        img_url=post.img_url,
+        author=post.author,
+        body=post.body
+    )
+    if edit_form.validate_on_submit():
+        post.title = edit_form.title.data
+        post.subtitle = edit_form.subtitle.data
+        post.img_url = edit_form.img_url.data
+        post.author = current_user
+        post.body = edit_form.body.data
+        db.session.commit()
+        return redirect(url_for("show_post", post_id=post.id))
+    return render_template("make-post.html", form=edit_form, is_edit=True)
+
+@app.route("/delete/<int:post_id>")
+@login_required
+@admin_required # Only an admin user can delete a bill
+def delete_post(post_id):
+    post_to_delete = db.get_or_404(Bill, post_id)
+    db.session.delete(post_to_delete)
+    db.session.commit()
+    return redirect(url_for('get_all_posts'))
+
+@app.route("/delete-comment/<int:comment_id>")
+@login_required
+@admin_required # Only an admin user can delete a comment
+def delete_comment(comment_id):
+    # comment_to_delete = db.get_or_404(Comment, comment_id)
+    # parent_id = comment_to_delete.post_id
+    # db.session.delete(comment_to_delete)
+    # db.session.commit()
+    return redirect(url_for('show_post', post_id = 1))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

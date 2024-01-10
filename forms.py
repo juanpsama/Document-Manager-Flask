@@ -1,12 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, DateTimeField, TextAreaField, RadioField, SelectMultipleField ,MultipleFileField
+from wtforms import StringField, SubmitField, PasswordField, DateTimeField, TextAreaField, RadioField, SelectMultipleField ,MultipleFileField, Field    
+from wtforms.widgets import TextInput
 from wtforms.validators import DataRequired, URL, Email
 from werkzeug.utils import secure_filename
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from flask_uploads import UploadSet, IMAGES
 
 images = UploadSet('images', IMAGES)
-
 
 # WTForm for creating a blog post
 class CreateBillForm(FlaskForm):
@@ -33,10 +33,9 @@ class CreateBillForm(FlaskForm):
     bill_concept = TextAreaField('Concepto de factura')
     description = TextAreaField('Descripcion', validators=[DataRequired()])
     tags = SelectMultipleField("Tags", choices=['Tag 1', 'Tag 2', 'Tag 3'], validators=[DataRequired()])
+    
 
-    bill_file_pdf = MultipleFileField ('Factura', validators=[
-        FileRequired()
-    ])
+    bill_file_pdf = FileField ('Factura')
     client_file_image = FileField('Deposito a cliente', validators=[
         FileRequired(),
         FileAllowed(images, 'Images only!')
@@ -61,6 +60,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Register")
 
 # TODO: Create a CommentForm so users can leave comments below posts
-class CommentForm(FlaskForm):
+class TagForm(FlaskForm):
     title = StringField('titulo',validators=[DataRequired()])
     submit = SubmitField("Submit comment")
