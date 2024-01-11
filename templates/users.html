@@ -6,8 +6,8 @@
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="site-heading">
-          <h1>Administration</h1>
-          <span class="subheading">Users Administration Panel.</span>
+          <h1>Administracion</h1>
+          <span class="subheading">Panel de Administracion Usuarios.</span>
           
         </div>
       </div>
@@ -29,9 +29,9 @@
             {%endif%} 
           </a>
           <p class="post-meta">            
-            <a href="{{url_for('edit_user', user_id = user.id)}}">Edit</a>
-            <a href="{{url_for('delete_user', user_id = user.id)}}">Delete</a>
-            <a href="{{url_for('change_admin', user_id = user.id)}}">{{ 'Quit Admin' if user.is_admin else 'Make Admin'}}</a>
+            <a href="{{url_for('edit_user', user_id = user.id)}}">Editar</a>
+            <a href="{{url_for('delete_user', user_id = user.id)}}">Eliminar</a>
+            <a href="{{url_for('change_admin', user_id = user.id)}}">{{ 'Quitar Admin' if user.is_admin else 'Hacer Admin'}}</a>
           </p>
         </div>
         <!-- Divider-->
@@ -39,7 +39,7 @@
         {% endfor %}
         <!-- New Post -->
         <div class="d-flex justify-content-end mb-4">
-          <a class="btn btn-primary float-right" href="{{url_for('register')}}">Create New User</a>
+          <a class="btn btn-primary float-right" href="{{url_for('register')}}">Crear nuevo usuario</a>
         </div>
       </div>
     </div>

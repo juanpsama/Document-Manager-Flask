@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta name="description" content="" />
   <meta name="author" content="" />
-  <title>Jpg's Blog</title>
+  <title>Gestion de Facturas</title>
   {% block styles %}
   <!-- Load Bootstrap-Flask CSS here -->
   {{ bootstrap.load_css() }}
@@ -29,7 +29,7 @@
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
     <div class="container px-4 px-lg-5">
-      <a class="navbar-brand" href="/">Start Blog</a>
+      <a class="navbar-brand" href="{{ url_for('get_all_posts') }}">Inicio</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
         aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         Menu
@@ -40,10 +40,10 @@
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_all_posts') }}">Home</a>
           </li>
-          {%if current_user.id == 1%}
+          {%if current_user.is_admin%}
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('users_panel') }}">
-              Users
+              Usuarios
             </a>
           </li>
           {%endif%}
@@ -63,7 +63,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('register') }}">
-              Register
+              Registrar 
             </a>
           </li>
           {% endif %}
