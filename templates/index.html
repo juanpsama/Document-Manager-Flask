@@ -21,7 +21,7 @@
       {% for post in all_posts %}
 
       <div class="post-preview">
-        <a href="{{ url_for('show_post', post_id=post.id) }}">
+        <a href="{{ url_for('show_post', bill_id=post.id) }}">
           <h2 class="post-title">{{ post.name }}</h2>
           <h3 class="post-subtitle">{{ post.folio }}</h3>
         </a>

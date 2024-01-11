@@ -12,7 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
 from forms import CreateBillForm, RegisterForm, LoginForm, TagForm, images
 # Import db models from the models.py
-from models import User, Bill, Tag,  db
+from models import User, Bill, Tag, File, FileGroup,  db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
@@ -100,7 +100,7 @@ def register():
 
 
 @app.route('/login', methods = ['GET', 'POST'])
-def login():
+def login(): 
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -126,6 +126,7 @@ def logout():
 
 @app.route('/')
 def redirect_main():
+    print('holllaa')
     return redirect(url_for('login'))
 
 # CRUD operations for users
@@ -184,12 +185,14 @@ def get_all_posts():
     posts = result.scalars().all()
     return render_template("index.html", all_posts=posts)
 
-@app.route("/bill/<int:post_id>", methods=["GET", "POST"])
+@app.route("/bill/<int:bill_id>", methods=["GET", "POST"])
 @login_required
-def show_post(post_id):
-    requested_post = db.get_or_404(Bill, post_id)
+def show_post(bill_id):
+    requested_bill = db.get_or_404(Bill, bill_id)
     form = TagForm()
+    
     if form.validate_on_submit():
+
         # Allow only logged-in users to comment on posts
         if not current_user.is_authenticated:
            redirect_unauthorized()
@@ -203,65 +206,105 @@ def show_post(post_id):
         # db.session.add(new_comment)
         # db.session.commit()
 
-    return render_template("post.html", post=requested_post, form = form)
+    return render_template("post.html", post=requested_bill, form = form)
 
 @app.route("/new-bill", methods=["GET", "POST"])
 @login_required
 def add_new_post():
     form = CreateBillForm()
     if form.validate_on_submit():
-        
-        # the multiple file field returns a list of files 
-        bill_file_pdf = form.bill_file_pdf.data
-        # print(bill_file_pdf)  
-        client_deposit_image = form.client_file_image.data
-        deposit_image = form.deposit_file_image.data
 
-        bill_file_pdf_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], bill_file_pdf.filename)
-        client_deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], client_deposit_image.filename)
-        deposit_image_path = os.path.join(app.config['UPLOADS_DEFAULT_DEST'], deposit_image.filename)
+        # # the multiple file field returns a list of files 
+        # Assigning all the list to variables
+        bill_files_pdf = form.bill_file_pdf.data
+        client_deposit_images = form.client_file_image.data
+        deposit_images = form.deposit_file_image.data
 
-        bill_file_pdf.save(bill_file_pdf_path)
-        client_deposit_image.save(client_deposit_image_path)
-        deposit_image.save(deposit_image_path)
+        # Getting a path to store every file on all the three lists
+        bill_file_pdf_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in bill_files_pdf]
+        client_deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in client_deposit_images]
+        deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in deposit_images]
 
+        # Saving every one of the files in all three listss
+        for i in range(len(bill_files_pdf)):
+            bill_files_pdf[i].save(bill_file_pdf_paths[i])
+
+        for i in range(len(client_deposit_images)):
+            client_deposit_images[i].save(client_deposit_image_paths[i])
+
+        for i in range(len(deposit_images)):
+            deposit_images[i].save(deposit_image_paths[i])
+
+        # Storing in the database as files to assign to a FileGroup
+        bill_file_group = FileGroup()
+        for path in bill_file_pdf_paths:
+            new_file = File(
+                file_url = path.replace('static/',''),
+                file_group = bill_file_group  
+            )
+            db.session.add(new_file)
+            db.session.commit()
+
+        client_images_file_group = FileGroup()
+        for path in client_deposit_image_paths:
+            new_file = File(
+                file_url = path.replace('static/',''),
+                file_group = client_images_file_group 
+            )
+            db.session.add(new_file)
+            db.session.commit()
+
+        deposit_images_file_group = FileGroup()
+        for path in deposit_image_paths:
+            new_file = File(
+                file_url = path.replace('static/',''),
+                file_group = deposit_images_file_group  
+            )
+            db.session.add(new_file)
+            db.session.commit()
+
+        # Creating a new bill and assingning each group of files to the columns in bills
         new_bill = Bill(
             author = current_user,
             folio = str(datetime.now()).replace(' ', '_'),
             document_type = form.document_type.data,
+            
             payment_date = form.payment_date.data,
             bill_date = form.bill_date.data,
             bill_concept = form.bill_concept.data,
             description = form.description.data,
-            bill_pdf = bill_file_pdf_path.replace('static/',''),
-            client_deposit_image = client_deposit_image_path.replace('static/',''),
-            deposit_image = deposit_image_path.replace('static/','') 
+            bill_pdf = bill_file_group,
+            client_deposit_image = client_images_file_group,
+            deposit_image = deposit_images_file_group
         )
         db.session.add(new_bill)
         db.session.commit()
+
         return redirect(url_for("get_all_posts"))
     return render_template("make-post.html", form=form)
 
-@app.route("/edit-bill/<int:post_id>", methods=["GET", "POST"])
+@app.route("/edit-bill/<int:bill_id>", methods=["GET", "POST"])
 @login_required
 @admin_required # Only an admin user can edit a post
-def edit_post(post_id):
-    post = db.get_or_404(Bill, post_id)
+def edit_post(bill_id):
+    bill = db.get_or_404(Bill, bill_id)
+
     edit_form = CreateBillForm(
-        title=post.title,
-        subtitle=post.subtitle,
-        img_url=post.img_url,
-        author=post.author,
-        body=post.body
+        document_type = bill.document_type,
+        payment_date = bill.payment_date,
+        bill_date = bill.bill_date,
+        bill_concept = bill.bill_concept,
+        description = bill.description
     )
+
     if edit_form.validate_on_submit():
-        post.title = edit_form.title.data
-        post.subtitle = edit_form.subtitle.data
-        post.img_url = edit_form.img_url.data
-        post.author = current_user
-        post.body = edit_form.body.data
+        document_type = edit_form.document_type.data,
+        payment_date = edit_form.payment_date.data,
+        bill_date = edit_form.bill_date.data,
+        bill_concept = edit_form.bill_concept.data,
+        description = edit_form.description.data,
         db.session.commit()
-        return redirect(url_for("show_post", post_id=post.id))
+        return redirect(url_for("show_post", bill_id=bill.id))
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
 @app.route("/delete/<int:post_id>")

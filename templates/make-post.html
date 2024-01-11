@@ -8,9 +8,9 @@ include "header.html" %}
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="page-heading">
           {% if is_edit: %}
-          <h1>Edit Post</h1>
+          <h1>Editar Movimiento</h1>
           {% else: %}
-          <h1>New Post</h1>
+          <h1>Nuevo Movimiento</h1>
           {% endif %}
           <span class="subheading">You're going to make a great blog post!</span>
         </div>
@@ -23,10 +23,7 @@ include "header.html" %}
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
-        {{render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
-        <form action="">
-          <input type="datetime-local">
-        </form>
+        {{render_form(form, novalidate=True, button_map={"submit": "primary"})}}
       </div>
     </div>
   </div>

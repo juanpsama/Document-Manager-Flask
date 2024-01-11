@@ -33,14 +33,20 @@ class Bill(db.Model):
     # name = db.Column(db.String(250), unique=True, nullable=False)
     folio = db.Column(db.String(250), nullable=False)
     document_type = db.Column(db.String(250), nullable = False)
-    payment_date = db.Column(db.DateTime, nullable = False)
-    bill_date = db.Column(db.DateTime, nullable = False)
+    payment_date = db.Column(db.Date, nullable = False)
+    bill_date = db.Column(db.Date, nullable = False)
     bill_concept = db.Column(db.Text, nullable = False)
     description = db.Column(db.Text, nullable = False)
 
-    bill_pdf = db.Column(db.String(250), nullable=False)
-    client_deposit_image = db.Column(db.String(250), nullable=False)
-    deposit_image = db.Column(db.String(250), nullable=False)
+    # bill_pdf = db.Column(db.String(250), nullable=False)
+    bill_pdf_id = db.Column(db.Integer, db.ForeignKey('files_groups.id'))
+    bill_pdf = relationship("FileGroup", foreign_keys="Bill.bill_pdf_id")
+
+    client_deposit_image_id = db.Column(db.Integer, db.ForeignKey('files_groups.id'))
+    client_deposit_image = relationship("FileGroup", foreign_keys="Bill.client_deposit_image_id")
+
+    deposit_image_id = db.Column(db.Integer, db.ForeignKey('files_groups.id'))
+    deposit_image = relationship("FileGroup", foreign_keys = "Bill.deposit_image_id")
 
     # comments = relationship("Comment", back_populates="parent_post")
     tag = relationship("Tag", back_populates="parent_bill")
@@ -57,3 +63,30 @@ class Tag(db.Model):
     parent_bill = relationship("Bill", back_populates="tag")
 
     name = db.Column(db.String(250), nullable=False)
+
+class File(db.Model):
+    __tablename__ = "files"
+    id = db.Column(db.Integer, primary_key=True)
+    file_url = db.Column(db.String(250), nullable=False)
+
+    # Make a relationship between file and file group 
+    # Foreign key
+    id_group = db.Column(db.Integer, db.ForeignKey("files_groups.id"))
+    file_group = relationship("FileGroup", back_populates = 'files')
+
+    
+
+class FileGroup(db.Model):
+    __tablename__ = "files_groups"
+    id = db.Column(db.Integer, primary_key=True)\
+    
+    #TODO: rename this variable form files to file
+    files = relationship("File", back_populates='file_group')
+    
+    # Relationship with bills
+
+    # bill_file = relationship("Bill", back_populates = 'bill_pdf')
+    # client_image = relationship("Bill", back_populates = 'client_deposit_image')
+    # deposit_image = relationship("Bill", back_populates = 'deposit_image')
+
+    
