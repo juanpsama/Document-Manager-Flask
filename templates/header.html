@@ -27,7 +27,7 @@
 
 <body>
   <!-- Navigation-->
-  <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+  <nav class="navbar navbar-expand-lg navbar-light mb-5" id="mainNav" style="background-image: url('../static/assets/img/login-bg.jpg')">
     <div class="container px-4 px-lg-5">
       <a class="navbar-brand" href="{{ url_for('get_all_posts') }}">Inicio</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
@@ -38,7 +38,7 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ms-auto py-4 py-lg-0">
           <li class="nav-item">
-            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_all_posts') }}">Home</a>
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_all_posts') }}">Registros</a>
           </li>
           <!-- Only show Login/Register if user is logged out. Otherwise show "Log Out" -->
           {% if current_user.is_authenticated %}
