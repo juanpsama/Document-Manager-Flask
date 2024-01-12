@@ -340,9 +340,14 @@ def delete_user(user_id):
 @login_required
 @permission_required('can_view_bills')
 def get_all_posts():
-    result = db.session.execute(db.select(Bill))
-    posts = result.scalars().all()
-    return render_template("index.html", all_posts=posts)
+    # result = db.session.execute(db.select(Bill))
+    # posts = result.scalars().all()
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    bills = Bill.query.paginate(page = page, per_page=per_page, error_out=False)
+    # return render_template('records.html', records=records)
+    return render_template("index.html", all_posts=bills)
 
 @app.route("/bill/<int:bill_id>", methods=["GET", "POST"])
 @login_required
