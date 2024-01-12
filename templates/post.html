@@ -57,8 +57,8 @@
     
           </li  >
         </ul>
-        <!--Only show Edit Post button if user id is 1 (admin user) -->
-        {%if current_user.is_admin%}
+        
+        {%if current_user.role.can_edit_bills%}
         <div class="d-flex justify-content-end mb-4">
           <a class="btn btn-primary float-right" href="{{url_for('edit_post', bill_id=post.id)}}">Editar Movimiento</a>
         </div>

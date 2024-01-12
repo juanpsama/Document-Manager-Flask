@@ -10,8 +10,12 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(100))
-    is_admin = db.Column(db.Boolean, default = False, nullable = False) 
     
+    #Create Foreign Key to "roles.id" .
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), default = 1)
+    #Create reference to the User object, the "posts" refers to the posts protperty in the User class.
+    role = relationship("Role", back_populates="users")
+
     #This will act like a List of BlogPost objects attached to each User. 
     #The "author" refers to the author property in the BlogPost class.
     posts = relationship("Bill", back_populates="author")
@@ -20,7 +24,41 @@ class User(UserMixin, db.Model):
 
         #Method 2. Altenatively use Dictionary Comprehension to do the same thing.
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}   
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    role_title = db.Column(db.String(100), unique=True, nullable = False)
+    role_description = db.Column(db.Text, nullable = True) 
+
+    # Permissions for users
+    can_view_users = db.Column(db.Boolean, default=False, nullable=False)
+    can_edit_users = db.Column(db.Boolean, default=False, nullable=False)
+    can_delete_users = db.Column(db.Boolean, default=False, nullable=False)
+    can_create_users = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Permissions for bills
+    can_view_bills = db.Column(db.Boolean, default=False, nullable=False)
+    can_edit_bills = db.Column(db.Boolean, default=False, nullable=False)
+    can_delete_bills = db.Column(db.Boolean, default=False, nullable=False)
+    can_create_bills = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Permissions for tags
+    can_view_tags = db.Column(db.Boolean, default=False, nullable=False)
+    can_edit_tags = db.Column(db.Boolean, default=False, nullable=False)
+    can_delete_tags = db.Column(db.Boolean, default=False, nullable=False)
+    can_create_tags = db.Column(db.Boolean, default=False, nullable=False)
     
+    # Permissions for roles
+    can_view_roles = db.Column(db.Boolean, default=False, nullable=False)
+    can_edit_roles = db.Column(db.Boolean, default=False, nullable=False)
+    can_delete_roles = db.Column(db.Boolean, default=False, nullable=False)
+    can_create_roles = db.Column(db.Boolean, default=False, nullable=False)
+
+    
+    # Relationship to User
+    users = relationship("User", back_populates="role")     
+
 class Bill(db.Model):
     __tablename__ = "bills"
     id = db.Column(db.Integer, primary_key=True)

@@ -7,7 +7,7 @@
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="site-heading">
           <h1>Administracion</h1>
-          <span class="subheading">Panel de Administracion Usuarios.</span>
+          <span class="subheading">Panel de Administracion Roles.</span>
           
         </div>
       </div>
@@ -19,32 +19,30 @@
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <!-- Post preview-->
-        {% for user in all_users %}  
+        {% for role in all_roles %}  
         <div class="post-preview">
           <a href="#">
-            <h2 class="post-title">{{ user.name}}</h2>
-            <h3 class="post-subtitle">{{ user.email }}</h3>
-            <h3 class="post-subtitle" style = 'color:red;'>{{user.role.role_title}}</h3>  
+            <h2 class="post-title">{{ role.role_title}}</h2>
+            <h3 class="post-subtitle">{{ role.role_description }}</h3>
+            <!-- <h3 class="post-subtitle" style = 'color:red;'>{{role.role_title}}</h3>   -->
           </a>
           <p class="post-meta">            
-            {%if current_user.role.can_edit_users%}    
-            <a href="{{url_for('edit_user', user_id = user.id)}}">Editar</a>
-            <a href="{{url_for('changue_role', user_id = user.id)}}">Cambiar Rol</a>
+            {%if current_user.role.can_edit_roles%}    
+            <a href="{{url_for('edit_role', role_id = role.id)}}">Editar</a>
             {%endif%}
 
-            {%if current_user.role.can_delete_users and user != current_user%}
-            <a href="{{url_for('delete_user', user_id = user.id)}}">Eliminar</a>
+            {%if current_user.role.can_delete_roles and current_user.role != role %}
+            <a href="">Eliminar</a>
             {%endif%}
-
           </p>
         </div>
         <!-- Divider-->
         <hr class="my-4" />
         {% endfor %}
         <!-- New Post -->
-        {%if current_user.role.can_create_users%}
+        {%if current_user.role.can_create_roles%}
         <div class="d-flex justify-content-end mb-4">
-          <a class="btn btn-primary float-right" href="{{url_for('register')}}">Crear nuevo usuario</a>
+          <a class="btn btn-primary float-right" href="{{url_for('create_role')}}">Crear nuevo rol</a>
         </div>
         {%endif%}
       </div>
