@@ -375,7 +375,7 @@ def add_new_bill():
     form = CreateBillForm()
     if form.validate_on_submit():
 
-        # # the multiple file field returns a list of files 
+        # The multiple file field returns a list of files 
         # Assigning all the list to variables
         bill_files_pdf = form.bill_file_pdf.data
         client_deposit_images = form.client_file_image.data
@@ -386,7 +386,7 @@ def add_new_bill():
         client_deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in client_deposit_images]
         deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in deposit_images]
 
-        # Saving every one of the files in all three listss
+        # Saving every one of the files in all three lists
         for i in range(len(bill_files_pdf)):
             bill_files_pdf[i].save(bill_file_pdf_paths[i])
 

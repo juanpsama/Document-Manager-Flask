@@ -24,12 +24,12 @@
         <a href="{{ url_for('show_post', bill_id=post.id) }}">
           <h2 class="post-title">{{ post.name }}</h2>
           <h3 class="post-subtitle">{{ post.folio }}</h3>
+          <h3 class="post-subtitle">{{ post.bill_concept }}</h3>
         </a>
 
         <p class="post-meta">
-          Posted by <a href="#">{{post.author.name}}</a> on {{post.bill_date}}
+          Creado por <a href="#">{{post.author.name}}</a> el {{post.bill_date}}
 
-          <!-- Only show delete button if user id is 1 (admin user) -->
           {%if current_user.role.can_delete_bills %}
           <a href="{{url_for('delete_bill', post_id=post.id) }}">✘</a>
           {%endif%}

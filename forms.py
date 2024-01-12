@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, PasswordField, DateField,
                       TextAreaField, RadioField, SelectMultipleField , MultipleFileField, BooleanField )
-from wtforms.validators import DataRequired, URL, Email
+from wtforms.validators import DataRequired, URL, Email, InputRequired
 from werkzeug.utils import secure_filename
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from flask_uploads import UploadSet, IMAGES
@@ -16,14 +16,18 @@ class CreateBillForm(FlaskForm):
     bill_date = DateField("Fecha de factura")
     bill_concept = TextAreaField('Concepto de factura')
     description = TextAreaField('Descripcion', validators=[DataRequired()])
-    tags = SelectMultipleField("Tags", choices=['Tag 1', 'Tag 2', 'Tag 3'], validators=[DataRequired()])
+    # tags = SelectMultipleField("Tags", choices=['Tag 1', 'Tag 2', 'Tag 3'], validators=[DataRequired()])
     
 
-    bill_file_pdf = MultipleFileField('Factura')
+    bill_file_pdf = MultipleFileField('Factura', validators=[
+        InputRequired()
+    ])
     client_file_image = MultipleFileField('Deposito a cliente', validators=[
+        InputRequired(),
         FileAllowed(images, 'Images only!')
     ])
     deposit_file_image = MultipleFileField('Deposito a empresa', validators=[
+        InputRequired(),
         FileAllowed(images, 'Images only!')
     ])
     submit = SubmitField("Submit Post")
