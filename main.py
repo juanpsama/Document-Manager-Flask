@@ -10,9 +10,9 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Import your forms from the forms.py
-from forms import CreateBillForm, RegisterForm, LoginForm, TagForm, CreateRoleForm, images
+from forms import CreateBillForm, RegisterForm, LoginForm, TagForm, CreateRoleForm, DocumentTypeForm, images
 # Import db models from the models.py
-from models import User, Bill, Tag, File, FileGroup, Role,  db
+from models import User, Bill, Tag, File, FileGroup, Role, DocumentType,  db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
@@ -50,6 +50,7 @@ with app.app_context():
             can_edit_roles=True,
             can_delete_roles=True,
             can_create_roles=True,
+            can_manage_document_types = True
         )
 
         # Add the Role instance to the session
@@ -78,7 +79,7 @@ login_manager = LoginManager()
 login_manager.init_app(app) 
 
 def redirect_unauthorized():
-    flash('You have to register or login !!')
+    flash('Registrate antes de acceder a la pagina !!')
     return redirect(url_for('login'))
 
 @login_manager.unauthorized_handler
@@ -101,7 +102,7 @@ def permission_required(permission):
 
             # Check if the role has the required permission
             if not getattr(role, permission):
-                flash('You do not have permission to view this page.')
+                flash('No tienes permisos para ver esta pagina.')
                 return redirect(url_for('login'))
             return f(*args, **kwargs)
         return decorated_function
@@ -133,8 +134,8 @@ def create_role():
     if form.validate_on_submit():
         role = db.session.execute(db.select(Role).where(Role.role_title == form.role_title.data)).scalar()
         if role:
-            flash('That role name alredy exist please log in.')
-            return redirect(url_for('login'))
+            flash('Ese nombre de rol ya existe por favor ingresa otro.')
+            return redirect(url_for('roles_panel'))
          
         new_role = Role(
             role_title = form.role_title.data,
@@ -154,7 +155,8 @@ def create_role():
             can_view_roles = form.can_view_roles.data,
             can_edit_roles = form.can_edit_roles.data,
             can_delete_roles = form.can_delete_roles.data,
-            can_create_roles = form.can_create_roles.data
+            can_create_roles = form.can_create_roles.data,
+            can_manage_document_types = form.can_manage_document_types.data
         )
 
         db.session.add(new_role)
@@ -189,7 +191,8 @@ def edit_role(role_id):
         can_view_roles = role.can_view_roles,
         can_edit_roles = role.can_edit_roles,
         can_delete_roles = role.can_delete_roles,
-        can_create_roles = role.can_create_roles
+        can_create_roles = role.can_create_roles,
+        can_manage_document_types = role.can_manage_document_types
     )
 
     if edit_role_form.validate_on_submit():
@@ -210,7 +213,8 @@ def edit_role(role_id):
         role.can_view_roles = edit_role_form.can_view_roles.data
         role.can_edit_roles = edit_role_form.can_edit_roles.data
         role.can_delete_roles = edit_role_form.can_delete_roles.data
-        role.can_create_roles = edit_role_form.can_create_roles.data
+        role.can_create_roles = edit_role_form.can_create_roles.data,
+        role.can_manage_document_types = edit_role_form.can_manage_document_types.data
         
         db.session.commit()
         return redirect(url_for("roles_panel"))
@@ -252,7 +256,7 @@ def register():
         password = form.password.data
         user = db.session.execute(db.select(User).where(User.email == email)).scalar()
         if user:
-            flash('That email alredy exist please log in.')
+            flash('Ese email ya existe porfavor log in.')
             return redirect(url_for('login'))
         
         # Use Werkzeug to hash the user's password when creating a new user.
@@ -283,9 +287,11 @@ def login():
             if check_password_hash(user.password, password):
                 login_user(user)
                 return redirect(url_for('get_all_posts'))
-            flash('Password Incorrect, please try again.')
+            # flash('Password Incorrect, please try again.')
+            flash('Contraseña incorrecta, porfavor intenta de nuevo.')
         else:
-            flash('That email doesnt exist, please try again!!')
+            # flash('That email doesnt exist, please try again!!')
+            flash('Ese email no esta registrado, porfavor intenta de nuevo!!')
     return render_template("login.html", form = form)
 
 @app.route('/logout')
@@ -378,7 +384,20 @@ def show_post(bill_id):
 @permission_required('can_create_bills')
 def add_new_bill():
     form = CreateBillForm()
+    
+    document_types = db.session.execute(db.select(DocumentType)).scalars().all()
+    tags = db.session.execute(db.select(Tag)).scalars().all()
+    
+    tag_choices = [(tag.id, tag.name) for tag in tags]  
+    form.tags.choices = tag_choices
+
+    type_choices = [(type.id, type.name) for type in document_types]  
+    form.document_type.choices = type_choices
+
+    # form.document_type.choices = [('Hola', 'hola2'), ('Hola1', 'hola1')]
+    
     if form.validate_on_submit():
+        
 
         # The multiple file field returns a list of files 
         # Assigning all the list to variables
@@ -429,21 +448,28 @@ def add_new_bill():
             db.session.add(new_file)
             db.session.commit()
 
-        # Creating a new bill and assingning each group of files to the columns in bills
+        document_type_selected = db.get_or_404(DocumentType, form.document_type.data)
         new_bill = Bill(
             author = current_user,
             folio = str(datetime.now()).replace(' ', '_'),
-            document_type = form.document_type.data,
+            document_type = document_type_selected,
             
             payment_date = form.payment_date.data,
             bill_date = form.bill_date.data,
             bill_concept = form.bill_concept.data,
             description = form.description.data,
+            # Assingning each group of files to the columns in bills
             bill_pdf = bill_file_group,
             client_deposit_image = client_images_file_group,
             deposit_image = deposit_images_file_group
         )
         db.session.add(new_bill)
+
+        # 'form.tags.data' is a list of the tags selected
+        for tag_id in form.tags.data:
+            tag_selected = db.get_or_404(Tag, tag_id)
+            new_bill.tags.append(tag_selected)
+
         db.session.commit()
 
         return redirect(url_for("get_all_posts"))
@@ -482,17 +508,62 @@ def delete_bill(post_id):
     db.session.commit()
     return redirect(url_for('get_all_posts'))
 
-# Operations for tags
+
+
+# Operations for tags and types
 # TODO: make operations to edit, add and view tags
-@app.route("/delete-comment/<int:comment_id>")
+
+@app.route('/tag', methods = ['GET', 'POST'])
+@login_required
+@permission_required('can_view_tags')
+@permission_required('can_create_tags')
+def get_post_tag():
+    form = TagForm()
+    if request.method == 'POST':
+        new_tag = Tag( name = form.name.data )
+    
+        db.session.add(new_tag)
+        db.session.commit()
+
+    result = db.session.execute(db.select(Tag))
+    tags = result.scalars().all()
+    return render_template('tag-manager.html', form = form, items = tags)
+
+@app.route("/tag/<int:tag_id>", methods = ['GET'])
 @login_required
 @permission_required('can_delete_tags')
-def delete_comment(comment_id):
-    # comment_to_delete = db.get_or_404(Comment, comment_id)
-    # parent_id = comment_to_delete.post_id
-    # db.session.delete(comment_to_delete)
-    # db.session.commit()
-    return redirect(url_for('show_post', post_id = 1))
+def delete_tag(tag_id):
+    tag_to_delete = db.get_or_404(Tag, tag_id)
+    db.session.delete(tag_to_delete)
+    db.session.commit()
+    return redirect(url_for('get_post_tag'))
+
+# Operations for document_types
+@app.route('/document-types', methods = ['GET', 'POST'])
+@login_required
+@permission_required('can_manage_document_types')
+def get_document_types():
+    form = DocumentTypeForm()
+    if request.method == 'POST':
+        new_tag = DocumentType( name = form.name.data )
+
+        db.session.add(new_tag)
+        db.session.commit()
+
+    result = db.session.execute(db.select(DocumentType))
+    document_type = result.scalars().all()
+    #Se necesita otro template para cada vista tag y type
+    return render_template('type-manager.html', form = form, items = document_type)
+
+@app.route("/document-type/<int:type_id>", methods = ['GET'])
+@login_required
+@permission_required('can_manage_document_types')
+def delete_document_type(type_id):
+    tag_to_delete = db.get_or_404(DocumentType, type_id)
+    db.session.delete(tag_to_delete)
+    db.session.commit()
+    return redirect(url_for('get_document_types'))
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

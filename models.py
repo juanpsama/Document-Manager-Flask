@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(100))
     
     #Create Foreign Key to "roles.id" .
-    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), default = 1)
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), default = 2)
     #Create reference to the User object, the "posts" refers to the posts protperty in the User class.
     role = relationship("Role", back_populates="users")
 
@@ -55,9 +55,17 @@ class Role(db.Model):
     can_delete_roles = db.Column(db.Boolean, default=False, nullable=False)
     can_create_roles = db.Column(db.Boolean, default=False, nullable=False)
 
+    can_manage_document_types = db.Column(db.Boolean, default=False, nullable=False)
+
     
     # Relationship to User
-    users = relationship("User", back_populates="role")     
+    users = relationship("User", back_populates="role")  
+
+class DocumentType(db.Model):
+    __tablename__ = 'document_types'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    bills = relationship("Bill", back_populates="document_type")
 
 class Bill(db.Model):
     __tablename__ = "bills"
@@ -68,9 +76,11 @@ class Bill(db.Model):
     #Create reference to the User object, the "posts" refers to the posts protperty in the User class.
     author = relationship("User", back_populates="posts")
    
-    # name = db.Column(db.String(250), unique=True, nullable=False)
+    document_type_id = db.Column(db.Integer, db.ForeignKey("document_types.id"))
+    document_type = relationship("DocumentType", back_populates='bills')
+
     folio = db.Column(db.String(250), nullable=False)
-    document_type = db.Column(db.String(250), nullable = False)
+
     payment_date = db.Column(db.Date, nullable = False)
     bill_date = db.Column(db.Date, nullable = False)
     bill_concept = db.Column(db.Text, nullable = False)
@@ -86,21 +96,22 @@ class Bill(db.Model):
     deposit_image_id = db.Column(db.Integer, db.ForeignKey('files_groups.id'))
     deposit_image = relationship("FileGroup", foreign_keys = "Bill.deposit_image_id")
 
-    # comments = relationship("Comment", back_populates="parent_post")
-    tag = relationship("Tag", back_populates="parent_bill")
+    tags = db.relationship('Tag', secondary = 'bill_tag', back_populates = 'bills')
 
+ 
+# Join table for stablishing a many to many relationship between Bill and Tag
+bill_tag = db.Table(
+  'bill_tag',
+   db.Column('tag_id', db.Integer, db.ForeignKey('tags.id')),
+   db.Column('bill_id', db.Integer, db.ForeignKey('bills.id'))
+) 
 
 class Tag(db.Model):
     __tablename__ = "tags"
     id = db.Column(db.Integer, primary_key=True)
-
-    #make relationship with posts table
-    #Create Foreign Key, "users.id" the users refers to the tablename of User.
-    post_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
-    #Create reference to the User object, the "posts" refers to the posts protperty in the User class.
-    parent_bill = relationship("Bill", back_populates="tag")
-
     name = db.Column(db.String(250), nullable=False)
+
+    bills = db.relationship('Bill', secondary = 'bill_tag', back_populates = 'tags')
 
 class File(db.Model):
     __tablename__ = "files"

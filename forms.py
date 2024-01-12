@@ -1,22 +1,22 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, PasswordField, DateField,
-                      TextAreaField, RadioField, SelectMultipleField , MultipleFileField, BooleanField )
+                      TextAreaField, RadioField, SelectMultipleField , MultipleFileField, BooleanField)
+
 from wtforms.validators import DataRequired, URL, Email, InputRequired
-from werkzeug.utils import secure_filename
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from flask_uploads import UploadSet, IMAGES
+from flask_uploads import UploadSet, IMAGES 
 
 images = UploadSet('images', IMAGES)
 
 # WTForm for creating a blog post
 class CreateBillForm(FlaskForm):
      
-    document_type = RadioField("Tipo de documento", choices=['Tipo 1', 'Tipo 2', 'Tipo 3', 'Tipo 4'], validators=[DataRequired()])
+    document_type = RadioField("Tipo de documento", validators=[DataRequired()])
     payment_date = DateField("Fecha de factura")
     bill_date = DateField("Fecha de factura")
     bill_concept = TextAreaField('Concepto de factura')
     description = TextAreaField('Descripcion', validators=[DataRequired()])
-    # tags = SelectMultipleField("Tags", choices=['Tag 1', 'Tag 2', 'Tag 3'], validators=[DataRequired()])
+    tags = SelectMultipleField("Tags", coerce=int)
     
 
     bill_file_pdf = MultipleFileField('Factura', validators=[
@@ -56,6 +56,8 @@ class CreateRoleForm(FlaskForm):
     can_delete_roles = BooleanField("Can delete roles")
     can_create_roles = BooleanField("Can create roles")
 
+    can_manage_document_types = BooleanField("Can create roles")
+
     submit = SubmitField("Guardar Rol")
 
 class RegisterForm(FlaskForm):
@@ -70,7 +72,11 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Register")
 
-
 class TagForm(FlaskForm):
-    title = StringField('titulo',validators=[DataRequired()])
-    submit = SubmitField("Submit comment")
+    name = StringField('Titulo', validators=[DataRequired()])
+    submit = SubmitField("Crear Etiqueta")
+
+class DocumentTypeForm(FlaskForm):
+    name = StringField('Nuevo tipo de documento', validators=[DataRequired()])
+    submit = SubmitField("Crear Tipo de Documento")
+    

@@ -56,6 +56,23 @@
             </a>
           </li>
           {%endif%}
+
+          {%if current_user.role.can_view_tags%}
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_post_tag') }}">
+              Etiquetas
+            </a>
+          </li>
+          {%endif%}
+          
+          {%if current_user.role.can_manage_document_types%}
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_document_types') }}">
+            Tipos Documento
+            </a>
+          </li>
+          {%endif%}
+
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('logout') }}">
               Log Out
