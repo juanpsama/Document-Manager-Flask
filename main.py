@@ -1,7 +1,7 @@
 from datetime import datetime
 import os 
 
-from flask import Flask, abort, render_template, redirect, url_for, flash, request
+from flask import Flask, abort, render_template, redirect, url_for, flash, request, send_from_directory
 from flask_bootstrap import Bootstrap5
 from flask_login import login_user, LoginManager, current_user, logout_user, login_required
 from flask_uploads import configure_uploads
@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 Bootstrap5(app)
 
 # This is for config where the files should be stored
-app.config['UPLOADS_DEFAULT_DEST'] =  'static/files/'
+app.config['UPLOADS_DEFAULT_DEST'] =  'files/'
 configure_uploads(app, (images, ))
 
 # CONNECT TO DB
@@ -218,7 +218,7 @@ def edit_role(role_id):
         
         db.session.commit()
         return redirect(url_for("roles_panel"))
-    return render_template("register-role.html", form = edit_role_form)
+    return render_template("register.html", form = edit_role_form)
 
 @app.route('/user/changue-role/<int:user_id>', methods = ['GET', 'POST'])
 @login_required
@@ -240,8 +240,6 @@ def changue_role(user_id):
         db.session.commit()
         return redirect(url_for('users_panel'))
     
-    # TODO: Complete this and render the form dinamically in 'edit-user-rol.html' based on the roles available
-    # The form should be a radio button with all the possible roles
     return render_template('edit-user-role.html', roles = roles, user=user)
     
  
@@ -346,38 +344,28 @@ def delete_user(user_id):
 @login_required
 @permission_required('can_view_bills')
 def get_all_posts():
-    # result = db.session.execute(db.select(Bill))
-    # posts = result.scalars().all()
 
     page = request.args.get('page', 1, type=int)
     per_page = 10
-    bills = Bill.query.paginate(page = page, per_page=per_page, error_out=False)
-    # return render_template('records.html', records=records)
+    bills = Bill.query.order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
     return render_template("index.html", all_posts=bills)
+
+#TODO: This route will be the route to download the pdf file in the database
+@app.route('/download/<int:file_id>')
+@login_required
+def downloadFile(file_id):
+    filename = db.get_or_404(File, file_id)
+    uploads = app.root_path
+    
+    return send_from_directory(uploads, filename.file_url)
 
 @app.route("/bill/<int:bill_id>", methods=["GET", "POST"])
 @login_required
 @permission_required('can_view_bills')
 def show_post(bill_id):
     requested_bill = db.get_or_404(Bill, bill_id)
-    form = TagForm()
-    
-    if form.validate_on_submit():
-
-        # Allow only logged-in users to comment on posts
-        if not current_user.is_authenticated:
-           redirect_unauthorized()
-        
-        # new_comment = Comment(
-        #     text=form.body.data,
-        #     author=current_user,
-        #     parent_post=requested_post
-        # )
-
-        # db.session.add(new_comment)
-        # db.session.commit()
-
-    return render_template("post.html", post=requested_bill, form = form)
+    return render_template("post.html", post=requested_bill)
 
 @app.route("/new-bill", methods=["GET", "POST"])
 @login_required
@@ -406,9 +394,18 @@ def add_new_bill():
         deposit_images = form.deposit_file_image.data
 
         # Getting a path to store every file on all the three lists
-        bill_file_pdf_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in bill_files_pdf]
-        client_deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in client_deposit_images]
+        bill_file_pdf_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], 
+                                            f'{str(datetime.now()).replace(" ", "_").replace(":",".")}{current_user.id}{os.path.splitext(file.filename)[1]}') 
+                                            for file in bill_files_pdf]
+        
+        client_deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], 
+                                            f'{str(datetime.now()).replace(" ", "_").replace(":",".")}{current_user.id}{os.path.splitext(file.filename)[1]}') 
+                                            for file in client_deposit_images]
+                                            
         deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in deposit_images]
+
+        print(deposit_image_paths)
+        print(bill_file_pdf_paths)
 
         # Saving every one of the files in all three lists
         for i in range(len(bill_files_pdf)):
@@ -424,7 +421,7 @@ def add_new_bill():
         bill_file_group = FileGroup()
         for path in bill_file_pdf_paths:
             new_file = File(
-                file_url = path.replace('static/',''),
+                file_url = path,
                 file_group = bill_file_group  
             )
             db.session.add(new_file)
@@ -433,7 +430,7 @@ def add_new_bill():
         client_images_file_group = FileGroup()
         for path in client_deposit_image_paths:
             new_file = File(
-                file_url = path.replace('static/',''),
+                file_url = path,
                 file_group = client_images_file_group 
             )
             db.session.add(new_file)
@@ -442,7 +439,7 @@ def add_new_bill():
         deposit_images_file_group = FileGroup()
         for path in deposit_image_paths:
             new_file = File(
-                file_url = path.replace('static/',''),
+                file_url = path,
                 file_group = deposit_images_file_group  
             )
             db.session.add(new_file)
