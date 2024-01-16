@@ -12,25 +12,29 @@ images = UploadSet('images', IMAGES)
 class CreateBillForm(FlaskForm):
      
     document_type = RadioField("Tipo de documento", validators=[DataRequired()])
-    payment_date = DateField("Fecha de factura")
     bill_date = DateField("Fecha de factura")
-    bill_concept = TextAreaField('Concepto de factura')
-    description = TextAreaField('Descripcion', validators=[DataRequired()])
-    tags = SelectMultipleField("Tags", coerce=int)
-    
 
     bill_file_pdf = MultipleFileField('Factura', validators=[
         InputRequired()
     ])
-    client_file_image = MultipleFileField('Deposito a cliente', validators=[
+
+    client_file_image = MultipleFileField('Deposito del cliente', validators=[
         InputRequired(),
         FileAllowed(images, 'Images only!')
     ])
+
+    payment_date = DateField("Fecha de deposito del cliente")
     deposit_file_image = MultipleFileField('Deposito a empresa', validators=[
         InputRequired(),
         FileAllowed(images, 'Images only!')
     ])
-    submit = SubmitField("Submit Post")
+    bill_concept = TextAreaField('Concepto de factura')
+    description = TextAreaField('Descripción', validators=[DataRequired()])
+    tags = SelectMultipleField("Etiquetas", coerce=int)
+    
+
+  
+    submit = SubmitField("Guardar")
 
 class CreateRoleForm(FlaskForm):
     role_title = StringField("Nombre de rol", validators=[DataRequired()])
@@ -61,16 +65,16 @@ class CreateRoleForm(FlaskForm):
     submit = SubmitField("Guardar Rol")
 
 class RegisterForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    name = StringField("Name", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Register")
+    email = StringField("Correo", validators=[DataRequired(), Email()])
+    name = StringField("Nombre", validators=[DataRequired()])
+    password = PasswordField("Contraseña", validators=[DataRequired()])
+    submit = SubmitField("Guardar")
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Register")
+    email = StringField("Correo", validators=[DataRequired(), Email()])
+    password = PasswordField("Contraseña", validators=[DataRequired()])
+    submit = SubmitField("Login")
 
 class TagForm(FlaskForm):
     name = StringField('Titulo', validators=[DataRequired()])

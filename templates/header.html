@@ -29,7 +29,9 @@
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-light mb-5" id="mainNav" style="background-color: #4C5B61;">
     <div class="container px-4 px-lg-5">
+      {% if current_user.is_authenticated %}
       <a class="navbar-brand" href="{{ url_for('get_all_posts') }}">Inicio</a>
+      {%endif%}
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
         aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         Menu
@@ -37,11 +39,29 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ms-auto py-4 py-lg-0">
+          <!-- Only show Login/Register if user is logged out. Otherwise show "Log Out" -->
+          <!-- <li class="nav-item">
+            <a class="nav-link px-lg-3 py-lg-4" href="{{ url_for('get_all_posts') }}">INICIO</a>
+          </li> -->
+          {% if current_user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_all_posts') }}">Registros</a>
           </li>
-          <!-- Only show Login/Register if user is logged out. Otherwise show "Log Out" -->
-          {% if current_user.is_authenticated %}
+          {%if current_user.role.can_view_tags%}
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_post_tag') }}">
+              Etiquetas de Documento
+            </a>
+          </li>
+          {%endif%}
+          
+          {%if current_user.role.can_manage_document_types%}
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_document_types') }}">
+            Tipos de Documento
+            </a>
+          </li>
+          {%endif%}
           {%if current_user.role.can_view_users%}
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('users_panel') }}">
@@ -57,25 +77,9 @@
           </li>
           {%endif%}
 
-          {%if current_user.role.can_view_tags%}
-          <li class="nav-item">
-            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_post_tag') }}">
-              Etiquetas
-            </a>
-          </li>
-          {%endif%}
-          
-          {%if current_user.role.can_manage_document_types%}
-          <li class="nav-item">
-            <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('get_document_types') }}">
-            Tipos Documento
-            </a>
-          </li>
-          {%endif%}
-
           <li class="nav-item">
             <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('logout') }}">
-              Log Out
+              Salir
             </a>
           </li>
           {%else:%}

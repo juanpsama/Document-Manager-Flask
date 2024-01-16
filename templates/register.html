@@ -29,7 +29,33 @@
             {% endfor %}
           {% endif %}
         {% endwith %}
-        {{render_form(form)}}
+        <form method="POST" action="{{url_for('register')}}">
+          {{ form.hidden_tag() }}
+          <div class="form-group">
+              <strong>
+                {{ form.email.label(class="control-label") }}
+              </strong>
+              {{ form.email(class="form-control") }}
+          </div>
+          <div class="form-group">
+              <strong>
+                {{ form.name.label(class="control-label") }}
+              </strong>
+              {{ form.name(class="form-control") }}
+          </div>
+          <div class="form-group">
+              <strong>
+                {{ form.password.label(class="control-label") }}
+              </strong>
+              {{ form.password(class="form-control") }}
+          </div>
+          <div class="d-flex justify-content-start mt-3">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{url_for('login')}}" class="btn btn-danger mx-3">Cancelar</a>
+          </div>
+                  
+        </form>
+        
       </div>
     </div>
   </div>

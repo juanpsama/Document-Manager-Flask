@@ -393,6 +393,9 @@ def add_new_bill():
         client_deposit_images = form.client_file_image.data
         deposit_images = form.deposit_file_image.data
 
+        print(bill_files_pdf)
+        print(client_deposit_images)
+
         # Getting a path to store every file on all the three lists
         bill_file_pdf_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], 
                                             f'{str(datetime.now()).replace(" ", "_").replace(":",".")}{current_user.id}{os.path.splitext(file.filename)[1]}') 
