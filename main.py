@@ -15,7 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 # Import db models from the models.py
-from models import User, BlogPost, Comment
+from models import User, BlogPost, Comment, db
 
 
 
@@ -26,7 +26,6 @@ Bootstrap5(app)
 
 # CONNECT TO DB
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
-db = SQLAlchemy()
 db.init_app(app)
 
 with app.app_context():

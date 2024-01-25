@@ -1,5 +1,7 @@
 #Project specifics
 /instance/posts.db
+/static/files/
+/files
 /.vscode
 
 # Byte-compiled / optimized / DLL files
