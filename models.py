@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(100))
     
     #Create Foreign Key to "roles.id" .
-    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False)
     #Create reference to the User object, the "posts" refers to the posts protperty in the User class.
     role = relationship("Role", back_populates="users")
 
