@@ -199,22 +199,26 @@ def edit_role(role_id):
     if edit_role_form.validate_on_submit():
         role.role_title = edit_role_form.role_title.data
         role.role_description = edit_role_form.role_description.data
+
         role.can_view_users = edit_role_form.can_view_users.data
         role.can_edit_users = edit_role_form.can_edit_users.data
         role.can_delete_users = edit_role_form.can_delete_users.data
         role.can_create_users = edit_role_form.can_create_users.data
+
         role.can_view_bills = edit_role_form.can_view_bills.data
         role.can_edit_bills = edit_role_form.can_edit_bills.data
         role.can_delete_bills = edit_role_form.can_delete_bills.data
         role.can_create_bills = edit_role_form.can_create_bills.data
+
         role.can_view_tags = edit_role_form.can_view_tags.data
         role.can_edit_tags = edit_role_form.can_edit_tags.data
         role.can_delete_tags = edit_role_form.can_delete_tags.data
         role.can_create_tags = edit_role_form.can_create_tags.data
+
         role.can_view_roles = edit_role_form.can_view_roles.data
         role.can_edit_roles = edit_role_form.can_edit_roles.data
         role.can_delete_roles = edit_role_form.can_delete_roles.data
-        role.can_create_roles = edit_role_form.can_create_roles.data,
+        role.can_create_roles = edit_role_form.can_create_roles.data
         role.can_manage_document_types = edit_role_form.can_manage_document_types.data
         
         db.session.commit()
@@ -257,13 +261,15 @@ def register():
         if user:
             flash('Ese email ya existe porfavor log in.')
             return redirect(url_for('login'))
-        
+
+        user_role = db.session.execute(db.select(Role).where(Role.role_title == 'user')).scalar()
         # Use Werkzeug to hash the user's password when creating a new user.
         hash_password = generate_password_hash(password=password, method='pbkdf2:sha256', salt_length=8) 
         new_user = User(
             name = name,
             email = email,
-            password = hash_password
+            password = hash_password,
+            role = user_role
         )
         db.session.add(new_user)
         db.session.commit()
