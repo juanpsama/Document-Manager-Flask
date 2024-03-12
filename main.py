@@ -219,7 +219,7 @@ def edit_role(role_id):
         
         db.session.commit()
         return redirect(url_for("roles_panel"))
-    return render_template("register.html", form = edit_role_form)
+    return render_template("register-role.html", form = edit_role_form)
 
 @app.route('/user/changue-role/<int:user_id>', methods = ['GET', 'POST'])
 @login_required
