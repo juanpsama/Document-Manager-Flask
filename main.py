@@ -81,7 +81,8 @@ login_manager.init_app(app)
 def redirect_unauthorized():
     flash('Registrate antes de acceder a la pagina !!')
     return redirect(url_for('login'))
-
+# TODO: Segment in different files all the different parts of the app
+# Ex: Login, Bills, Roles, etc..
 @login_manager.unauthorized_handler
 def unauthorized():
     #return 'goog'
@@ -351,7 +352,6 @@ def get_all_posts():
 
     return render_template("index.html", all_posts=bills)
 
-#TODO: This route will be the route to download the pdf file in the database
 @app.route('/download/<int:file_id>')
 @login_required
 def downloadFile(file_id):
@@ -385,16 +385,13 @@ def add_new_bill():
     # form.document_type.choices = [('Hola', 'hola2'), ('Hola1', 'hola1')]
     
     if form.validate_on_submit():
-        
-
+        # TODO: Encapsulate repetitive code into a function 
+    
         # The multiple file field returns a list of files 
         # Assigning all the list to variables
         bill_files_pdf = form.bill_file_pdf.data
         client_deposit_images = form.client_file_image.data
         deposit_images = form.deposit_file_image.data
-
-        print(bill_files_pdf)
-        print(client_deposit_images)
 
         # Getting a path to store every file on all the three lists
         bill_file_pdf_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], 
@@ -406,9 +403,6 @@ def add_new_bill():
                                             for file in client_deposit_images]
                                             
         deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in deposit_images]
-
-        print(deposit_image_paths)
-        print(bill_file_pdf_paths)
 
         # Saving every one of the files in all three lists
         for i in range(len(bill_files_pdf)):
@@ -552,7 +546,8 @@ def get_document_types():
 
     result = db.session.execute(db.select(DocumentType))
     document_type = result.scalars().all()
-    #Se necesita otro template para cada vista tag y type
+
+    # Se necesita otro template para cada vista tag y type
     return render_template('type-manager.html', form = form, items = document_type)
 
 @app.route("/document-type/<int:type_id>", methods = ['GET'])
