@@ -40,27 +40,27 @@ class CreateRoleForm(FlaskForm):
     role_title = StringField("Nombre de rol", validators=[DataRequired()])
     role_description = TextAreaField('Descripcion de Rol')
     
-    can_view_users = BooleanField("Can view users")
-    can_edit_users = BooleanField("Can edit users")
-    can_delete_users = BooleanField("Can delete users")
-    can_create_users = BooleanField("Can create users")
+    can_view_users = BooleanField("View users")
+    can_edit_users = BooleanField("Edit users")
+    can_delete_users = BooleanField("Delete users")
+    can_create_users = BooleanField("Create users")
 
-    can_view_bills = BooleanField("Can view bills")
-    can_edit_bills = BooleanField("Can edit bills")
-    can_delete_bills = BooleanField("Can delete bills")
-    can_create_bills = BooleanField("Can create bills")
+    can_view_bills = BooleanField("View bills")
+    can_edit_bills = BooleanField("Edit bills")
+    can_delete_bills = BooleanField("Delete bills")
+    can_create_bills = BooleanField("Create bills")
 
-    can_view_tags = BooleanField("Can view tags")
-    can_edit_tags = BooleanField("Can edit tags")
-    can_delete_tags = BooleanField("Can delete tags")
-    can_create_tags = BooleanField("Can create tags")
+    can_view_tags = BooleanField("View tags")
+    can_edit_tags = BooleanField("Edit tags")
+    can_delete_tags = BooleanField("Delete tags")
+    can_create_tags = BooleanField("Create tags")
 
-    can_view_roles = BooleanField("Can view roles")
-    can_edit_roles = BooleanField("Can edit roles")
-    can_delete_roles = BooleanField("Can delete roles")
-    can_create_roles = BooleanField("Can create roles")
+    can_view_roles = BooleanField("View roles")
+    can_edit_roles = BooleanField("Edit roles")
+    can_delete_roles = BooleanField("Delete roles")
+    can_create_roles = BooleanField("Create roles")
 
-    can_manage_document_types = BooleanField("Can create roles")
+    can_manage_document_types = BooleanField("Manage Document Types (Create, Edit, Update, Destroy)")
 
     submit = SubmitField("Guardar Rol")
 
@@ -69,7 +69,6 @@ class RegisterForm(FlaskForm):
     name = StringField("Nombre", validators=[DataRequired()])
     password = PasswordField("Contraseña", validators=[DataRequired()])
     submit = SubmitField("Guardar")
-
 
 class LoginForm(FlaskForm):
     email = StringField("Correo", validators=[DataRequired(), Email()])

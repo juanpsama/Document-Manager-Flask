@@ -98,7 +98,6 @@ class Bill(db.Model):
 
     tags = db.relationship('Tag', secondary = 'bill_tag', back_populates = 'bills')
 
- 
 # Join table for stablishing a many to many relationship between Bill and Tag
 bill_tag = db.Table(
   'bill_tag',
@@ -123,19 +122,9 @@ class File(db.Model):
     id_group = db.Column(db.Integer, db.ForeignKey("files_groups.id"))
     file_group = relationship("FileGroup", back_populates = 'files')
 
-    
-
 class FileGroup(db.Model):
     __tablename__ = "files_groups"
     id = db.Column(db.Integer, primary_key=True)\
     
     #TODO: rename this variable form files to file
     files = relationship("File", back_populates='file_group')
-    
-    # Relationship with bills
-
-    # bill_file = relationship("Bill", back_populates = 'bill_pdf')
-    # client_image = relationship("Bill", back_populates = 'client_deposit_image')
-    # deposit_image = relationship("Bill", back_populates = 'deposit_image')
-
-    

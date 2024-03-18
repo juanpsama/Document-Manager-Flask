@@ -29,50 +29,6 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-    try: 
-        # Create a new Role instance
-        admin_role = Role(
-            role_title='admin',
-            role_description='Admin role with all permissions',
-            can_view_users=True,
-            can_edit_users=True,
-            can_delete_users=True,
-            can_create_users=True,
-            can_view_bills=True,
-            can_edit_bills=True,
-            can_delete_bills=True,
-            can_create_bills=True,
-            can_view_tags=True,
-            can_edit_tags=True,
-            can_delete_tags=True,
-            can_create_tags=True,
-            can_view_roles=True,
-            can_edit_roles=True,
-            can_delete_roles=True,
-            can_create_roles=True,
-            can_manage_document_types = True
-        )
-
-        # Add the Role instance to the session
-        db.session.add(admin_role)
-
-        # Commit the session to save the changes
-        db.session.commit()
-
-        # Create a new User 
-        hash_password = generate_password_hash(password='name', method='pbkdf2:sha256', salt_length=8)
-        new_user = User(
-            email = 'jp@mail.com',
-            password = hash_password, 
-            name='name', 
-            role = admin_role   
-        )
-        
-        db.session.add(new_user)
-        db.session.commit()
-    except:
-        print('there is a admin already')
-        pass
 
 # Configure Flask-Login
 login_manager = LoginManager()
@@ -81,8 +37,10 @@ login_manager.init_app(app)
 def redirect_unauthorized():
     flash('Registrate antes de acceder a la pagina !!')
     return redirect(url_for('login'))
+
 # TODO: Segment in different files all the different parts of the app
 # Ex: Login, Bills, Roles, etc..
+
 @login_manager.unauthorized_handler
 def unauthorized():
     #return 'goog'
@@ -125,7 +83,6 @@ def delete_role(user_id):
     role_to_delete = db.get_or_404(Role, user_id)
     db.session.delete(role_to_delete)
     db.session.commit()
-    # flash('User removed')
     return redirect(url_for('roles_panel'))
 
 @app.route('/roles/create', methods = ['GET', 'POST'])
@@ -159,7 +116,6 @@ def create_role():
             can_create_roles = form.can_create_roles.data,
             can_manage_document_types = form.can_manage_document_types.data
         )
-
         db.session.add(new_role)
         db.session.commit()
         
@@ -292,10 +248,8 @@ def login():
             if check_password_hash(user.password, password):
                 login_user(user)
                 return redirect(url_for('get_all_posts'))
-            # flash('Password Incorrect, please try again.')
             flash('Contraseña incorrecta, porfavor intenta de nuevo.')
         else:
-            # flash('That email doesnt exist, please try again!!')
             flash('Ese email no esta registrado, porfavor intenta de nuevo!!')
     return render_template("login.html", form = form)
 
@@ -373,6 +327,37 @@ def show_post(bill_id):
     requested_bill = db.get_or_404(Bill, bill_id)
     return render_template("post.html", post=requested_bill)
 
+def get_id_name_pair(option_class):
+    return [(option.id, option.name) for option in option_class]
+
+def make_filename(file: File):
+    file_extension = os.path.splitext(file.filename)[1]
+    file_name = str(datetime.now()).replace(" ", "_").replace(":",".")
+    filename = f'{file_name}{current_user.id}{file_extension}'
+    return filename
+
+def save_files_into_file_group(files: list) -> FileGroup:
+    # Create filenames based of the original name and the current 
+    file_paths = [os.path.join(
+                    app.config['UPLOADS_DEFAULT_DEST'], 
+                    make_filename(file) ) 
+                    for file in files]
+    
+    # Save all the files 
+    for i in range(len(files)):
+        files[i].save(os.path.join(app.root_path, file_paths[i]))
+
+    file_group = FileGroup()
+    # Store file paths in the database
+    for path in file_paths:
+        new_file = File(
+            file_url = path,
+            file_group = file_group  
+        )
+        db.session.add(new_file) 
+
+    return file_group
+
 @app.route("/new-bill", methods=["GET", "POST"])
 @login_required
 @permission_required('can_create_bills')
@@ -382,72 +367,24 @@ def add_new_bill():
     document_types = db.session.execute(db.select(DocumentType)).scalars().all()
     tags = db.session.execute(db.select(Tag)).scalars().all()
     
-    tag_choices = [(tag.id, tag.name) for tag in tags]  
-    form.tags.choices = tag_choices
+    # Transform tags and document_types to tuple lists to send as options to the form 
+    # based of the database registers
+    # form.document_type.choices = [('option_id_1', 'option_name_1'), ('option_id_2', 'option_name_2')]
+    form.tags.choices = get_id_name_pair(tags)
+    form.document_type.choices = get_id_name_pair(document_types)
 
-    type_choices = [(type.id, type.name) for type in document_types]  
-    form.document_type.choices = type_choices
-
-    # form.document_type.choices = [('Hola', 'hola2'), ('Hola1', 'hola1')]
-    
     if form.validate_on_submit():
-        # TODO: Encapsulate repetitive code into a function 
-    
+        # TODO: Quit and Refactor naming of all file groups
         # The multiple file field returns a list of files 
         # Assigning all the list to variables
         bill_files_pdf = form.bill_file_pdf.data
         client_deposit_images = form.client_file_image.data
         deposit_images = form.deposit_file_image.data
 
-        # Getting a path to store every file on all the three lists
-        bill_file_pdf_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], 
-                                            f'{str(datetime.now()).replace(" ", "_").replace(":",".")}{current_user.id}{os.path.splitext(file.filename)[1]}') 
-                                            for file in bill_files_pdf]
-        
-        client_deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], 
-                                            f'{str(datetime.now()).replace(" ", "_").replace(":",".")}{current_user.id}{os.path.splitext(file.filename)[1]}') 
-                                            for file in client_deposit_images]
-                                            
-        deposit_image_paths = [os.path.join(app.config['UPLOADS_DEFAULT_DEST'], file.filename) for file in deposit_images]
-
-        # Saving every one of the files in all three lists
-        for i in range(len(bill_files_pdf)):
-            bill_files_pdf[i].save(bill_file_pdf_paths[i])
-
-        for i in range(len(client_deposit_images)):
-            client_deposit_images[i].save(client_deposit_image_paths[i])
-
-        for i in range(len(deposit_images)):
-            deposit_images[i].save(deposit_image_paths[i])
-
-        # Storing in the database as files to assign to a FileGroup
-        bill_file_group = FileGroup()
-        for path in bill_file_pdf_paths:
-            new_file = File(
-                file_url = path,
-                file_group = bill_file_group  
-            )
-            db.session.add(new_file)
-            db.session.commit()
-
-        client_images_file_group = FileGroup()
-        for path in client_deposit_image_paths:
-            new_file = File(
-                file_url = path,
-                file_group = client_images_file_group 
-            )
-            db.session.add(new_file)
-            db.session.commit()
-
-        deposit_images_file_group = FileGroup()
-        for path in deposit_image_paths:
-            new_file = File(
-                file_url = path,
-                file_group = deposit_images_file_group  
-            )
-            db.session.add(new_file)
-            db.session.commit()
-
+        bill_file_group = save_files_into_file_group(bill_files_pdf)
+        client_images_group = save_files_into_file_group(client_deposit_images)
+        deposit_images_group = save_files_into_file_group(deposit_images)
+                        
         document_type_selected = db.get_or_404(DocumentType, form.document_type.data)
         new_bill = Bill(
             author = current_user,
@@ -460,8 +397,8 @@ def add_new_bill():
             description = form.description.data,
             # Assingning each group of files to the columns in bills
             bill_pdf = bill_file_group,
-            client_deposit_image = client_images_file_group,
-            deposit_image = deposit_images_file_group
+            client_deposit_image = client_images_group,
+            deposit_image = deposit_images_group
         )
         db.session.add(new_bill)
 
@@ -511,8 +448,6 @@ def delete_bill(post_id):
 
 
 # Operations for tags and types
-# TODO: make operations to edit, add and view tags
-
 @app.route('/tag', methods = ['GET', 'POST'])
 @login_required
 @permission_required('can_view_tags')
@@ -542,7 +477,7 @@ def delete_tag(tag_id):
 @app.route('/document-types', methods = ['GET', 'POST'])
 @login_required
 @permission_required('can_manage_document_types')
-def get_document_types():
+def get_post_document_types():
     form = DocumentTypeForm()
     if request.method == 'POST':
         new_tag = DocumentType( name = form.name.data )
@@ -563,8 +498,7 @@ def delete_document_type(type_id):
     tag_to_delete = db.get_or_404(DocumentType, type_id)
     db.session.delete(tag_to_delete)
     db.session.commit()
-    return redirect(url_for('get_document_types'))
-
+    return redirect(url_for('get_post_document_types'))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
