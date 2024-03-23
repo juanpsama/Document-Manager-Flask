@@ -301,17 +301,6 @@ def delete_user(user_id):
     return redirect(url_for('users_panel'))
 
 ## Operations for the bills
-@app.route('/all_bills')
-@login_required
-@permission_required('can_view_bills')
-def get_all_posts():
-
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    bills = Bill.query.order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
-
-    return render_template("index.html", all_posts=bills)
-
 @app.route('/download/<int:file_id>')
 @login_required
 def downloadFile(file_id):
@@ -319,6 +308,18 @@ def downloadFile(file_id):
     uploads = app.root_path
     
     return send_from_directory(uploads, filename.file_url)
+
+@app.route('/all_bills')
+@login_required
+@permission_required('can_view_bills')
+def get_all_posts():
+    #TODO: render a form to filter between all the documents 
+    page = request.args.get('page', 1, type=int)
+
+    per_page = 10
+    bills = Bill.query.order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template("index.html", all_posts=bills)
 
 @app.route("/bill/<int:bill_id>", methods=["GET", "POST"])
 @login_required
@@ -436,12 +437,24 @@ def edit_post(bill_id):
         return redirect(url_for("show_post", bill_id=bill.id))
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
-@app.route("/delete/<int:post_id>")
+@app.route("/delete-bill/<int:bill_id>")
 @login_required
 @permission_required('can_delete_bills')
-def delete_bill(post_id):
-    post_to_delete = db.get_or_404(Bill, post_id)
-    db.session.delete(post_to_delete)
+def delete_bill(bill_id):
+    #TODO: delete also the files associated with the bill
+    # import os
+
+    # # Specify the file path
+    # file_path = "/path/to/your/file.txt"
+
+    # # Check if the file exists, then delete it
+    # if os.path.exists(file_path):
+    #     os.remove(file_path)
+    # else:
+    #     print("The file does not exist")
+
+    bill_to_delete = db.get_or_404(Bill, bill_id)
+    db.session.delete(bill_to_delete)
     db.session.commit()
     return redirect(url_for('get_all_posts'))
 

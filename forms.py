@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, PasswordField, DateField,
-                      TextAreaField, RadioField, SelectMultipleField , MultipleFileField, BooleanField)
+                      TextAreaField, RadioField, SelectMultipleField , 
+                      MultipleFileField, BooleanField, SelectField)
 
 from wtforms.validators import DataRequired, URL, Email, InputRequired
 from flask_wtf.file import FileField, FileAllowed, FileRequired
@@ -10,8 +11,6 @@ images = UploadSet('images', IMAGES)
 
 # WTForm for creating a blog post
 class CreateBillForm(FlaskForm):
-     
-    document_type = RadioField("Tipo de documento", validators=[DataRequired()])
     bill_date = DateField("Fecha de factura")
 
     bill_file_pdf = MultipleFileField('Factura', validators=[
@@ -28,8 +27,11 @@ class CreateBillForm(FlaskForm):
         InputRequired(),
         FileAllowed(images, 'Images only!')
     ])
+
     bill_concept = TextAreaField('Concepto de factura')
     description = TextAreaField('Descripción', validators=[DataRequired()])
+
+    document_type = RadioField("Tipo de documento", validators=[DataRequired()])
     tags = SelectMultipleField("Etiquetas", coerce=int)
     
 
@@ -82,4 +84,14 @@ class TagForm(FlaskForm):
 class DocumentTypeForm(FlaskForm):
     name = StringField('Nuevo tipo de documento', validators=[DataRequired()])
     submit = SubmitField("Crear Tipo de Documento")
-    
+
+class FilterBillForm(FlaskForm):
+    bill_name = StringField('Nombre')
+    bill_folio = StringField('Folio')
+
+    document_type = SelectField('Selecciona una tipo de documento', choices=[('1', '22'), ('1', '22')])
+    bill_author = SelectField('Selecciona un usuario', choices=[('1', '22'), ('1', '22')])
+    tags = SelectField('Selecciona una etiqueta', choices=[('1', '22'), ('1', '22')])
+
+    submit = SubmitField("Buscar")
+
