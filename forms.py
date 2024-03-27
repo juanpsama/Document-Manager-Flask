@@ -1,31 +1,97 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, URL, Email
-from flask_ckeditor import CKEditorField
+from wtforms import (StringField, SubmitField, PasswordField, DateField,
+                      TextAreaField, RadioField, SelectMultipleField , 
+                      MultipleFileField, BooleanField, SelectField)
 
+from wtforms.validators import DataRequired, URL, Email, InputRequired
+from flask_wtf.file import FileField, FileAllowed, FileRequired
+from flask_uploads import UploadSet, IMAGES 
+
+images = UploadSet('images', IMAGES)
 
 # WTForm for creating a blog post
-class CreatePostForm(FlaskForm):
-    title = StringField("Blog Post Title", validators=[DataRequired()])
-    subtitle = StringField("Subtitle", validators=[DataRequired()])
-    img_url = StringField("Blog Image URL", validators=[DataRequired(), URL()])
-    body = CKEditorField("Blog Content", validators=[DataRequired()])
-    submit = SubmitField("Submit Post")
+class CreateBillForm(FlaskForm):
+    bill_date = DateField("Fecha de factura")
 
-# TODO: Create a RegisterForm to register new users
+    bill_file_pdf = MultipleFileField('Factura', validators=[
+        InputRequired()
+    ])
+
+    client_file_image = MultipleFileField('Deposito del cliente', validators=[
+        InputRequired(),
+        FileAllowed(images, 'Images only!')
+    ])
+
+    payment_date = DateField("Fecha de deposito del cliente")
+    deposit_file_image = MultipleFileField('Deposito a empresa', validators=[
+        InputRequired(),
+        FileAllowed(images, 'Images only!')
+    ])
+
+    bill_concept = TextAreaField('Concepto de factura')
+    description = TextAreaField('Descripción', validators=[DataRequired()])
+
+    document_type = RadioField("Tipo de documento", validators=[DataRequired()])
+    tags = SelectMultipleField("Etiquetas", coerce=int)
+    
+
+  
+    submit = SubmitField("Guardar")
+
+class CreateRoleForm(FlaskForm):
+    role_title = StringField("Nombre de rol", validators=[DataRequired()])
+    role_description = TextAreaField('Descripcion de Rol')
+    
+    can_view_users = BooleanField("View users")
+    can_edit_users = BooleanField("Edit users")
+    can_delete_users = BooleanField("Delete users")
+    can_create_users = BooleanField("Create users")
+
+    can_view_bills = BooleanField("View bills")
+    can_edit_bills = BooleanField("Edit bills")
+    can_delete_bills = BooleanField("Delete bills")
+    can_create_bills = BooleanField("Create bills")
+
+    can_view_tags = BooleanField("View tags")
+    can_edit_tags = BooleanField("Edit tags")
+    can_delete_tags = BooleanField("Delete tags")
+    can_create_tags = BooleanField("Create tags")
+
+    can_view_roles = BooleanField("View roles")
+    can_edit_roles = BooleanField("Edit roles")
+    can_delete_roles = BooleanField("Delete roles")
+    can_create_roles = BooleanField("Create roles")
+
+    can_manage_document_types = BooleanField("Manage Document Types (Create, Edit, Update, Destroy)")
+
+    submit = SubmitField("Guardar Rol")
+
 class RegisterForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    name = StringField("Name", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Register")
+    email = StringField("Correo", validators=[DataRequired(), Email()])
+    name = StringField("Nombre", validators=[DataRequired()])
+    password = PasswordField("Contraseña", validators=[DataRequired()])
+    submit = SubmitField("Guardar")
 
-# TODO: Create a LoginForm to login existing users
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Register")
+    email = StringField("Correo", validators=[DataRequired(), Email()])
+    password = PasswordField("Contraseña", validators=[DataRequired()])
+    submit = SubmitField("Login")
 
-# TODO: Create a CommentForm so users can leave comments below posts
-class CommentForm(FlaskForm):
-    body = CKEditorField("Comment", validators=[DataRequired()])
-    submit = SubmitField("Submit comment")
+class TagForm(FlaskForm):
+    name = StringField('Titulo', validators=[DataRequired()])
+    submit = SubmitField("Crear Etiqueta")
+
+class DocumentTypeForm(FlaskForm):
+    name = StringField('Nuevo tipo de documento', validators=[DataRequired()])
+    submit = SubmitField("Crear Tipo de Documento")
+
+class FilterBillForm(FlaskForm):
+    bill_name = StringField('Nombre')
+    bill_folio = StringField('Folio')
+
+    document_type = SelectField('Selecciona una tipo de documento', choices=[('1', '22'), ('1', '22')])
+    bill_author = SelectField('Selecciona un usuario', choices=[('1', '22'), ('1', '22')])
+    tags = SelectField('Selecciona una etiqueta', choices=[('1', '22'), ('1', '22')])
+
+    submit = SubmitField("Buscar")
+

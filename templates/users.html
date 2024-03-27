@@ -1,43 +1,63 @@
 {% include "header.html" %}
 
 <!-- Page Header-->
-<header class="masthead" style="background-image: url('../static/assets/img/admin-bg.jpg')">
+<!-- <header class="masthead" style="background-image: url('../static/assets/img/admin-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="site-heading">
-          <h1>Administration</h1>
-          <span class="subheading">Users Administration Panel.</span>
+          <h1>Administracion</h1>
+          <span class="subheading">Panel de Administracion Usuarios.</span>
           
         </div>
       </div>
     </div>
   </div>
-</header>
+</header> -->
 
-<div class="container px-4 px-lg-5">
+<div class="container px-4 px-lg-5 mt-5 pt-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <p class="flash">{{ message }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
         <!-- Post preview-->
         {% for user in all_users %}  
         <div class="post-preview">
           <a href="#">
             <h2 class="post-title">{{ user.name}}</h2>
             <h3 class="post-subtitle">{{ user.email }}</h3>
+            <h3 class="post-subtitle" style = 'color:red;'>{{user.role.role_title}}</h3>  
           </a>
-          <p class="post-meta">
-            <a href="{{url_for('edit_user', user_id = user.id)}}">Edit</a>
-            <a href="{{url_for('delete_user', user_id = user.id)}}">Delete</a>
+          <p class="post-meta">            
+            {%if current_user.role.can_edit_users%}    
+            <a href="{{url_for('users.edit_user', user_id = user.id)}}">Editar</a>
+            <a href="{{url_for('users.changue_role', user_id = user.id)}}">Cambiar Rol</a>
+            {%endif%}
+
+            {%if current_user.role.can_delete_users and user != current_user%}
+            <a href="{{url_for('users.delete_user', user_id = user.id)}}">Eliminar</a>
+            {%endif%}
+
           </p>
         </div>
         <!-- Divider-->
         <hr class="my-4" />
         {% endfor %}
-       
+        <!-- New Post -->
+        {%if current_user.role.can_create_users%}
+        <div class="d-flex justify-content-end mb-4">
+          <a class="btn btn-primary float-right" href="{{url_for('auth.register')}}">Crear nuevo usuario</a>
+        </div>
+        {%endif%}
       </div>
     </div>
   </div>
   
-
 
 {% include "footer.html" %}

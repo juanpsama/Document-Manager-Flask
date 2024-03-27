@@ -1,64 +1,76 @@
-{% from "bootstrap5/form.html" import render_form %} {% block content %}
 {% include "header.html" %}
-<!-- Page Header-->
-<header class="masthead" style="background-image: url('{{post.img_url}}')">
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7">
-        <div class="post-heading">
-          <h1>{{ post.title }}</h1>
-          <h2 class="subheading">{{ post.subtitle }}</h2>
-          <span class="meta">Posted by
-            <a href="#">{{ post.author.name }}</a>
-            on {{ post.date }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
 
 <!-- Post Content -->
 <article>
-  <div class="container px-4 px-lg-5">
+  <div class="container px-4 px-lg-5 mt-5 pt-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
-        {{ post.body|safe }}
-        <!--Only show Edit Post button if user id is 1 (admin user) -->
-        {%if current_user.id == 1%}
+        <div class="row">
+          <div class="col">
+            <h4>Tipo de documento</h4>
+            <p>{{ post.document_type.name }}</p>
+          </div>
+          <div class="col">
+            <h4>Fecha de pago</h4>
+            <p>{{ post.payment_date }}</p>
+          </div>
+          <div class="col">
+            <h4>Fecha de facturacion</h4>
+            <p>{{ post.bill_date }}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <h4>Concepto de la factura</h4>
+            <p>{{ post.bill_concept }}</p>
+          </div>
+          <div class="col">
+            <h4>Descripcion</h4>
+            <p>{{ post.description }}</p>
+          </div>
+          <div class="col">
+            <h4>Etiquetas</h4>
+            {%for tag in post.tags:%}
+            <div style="color: gray;">
+              #{{ tag.name }}
+            </div>
+            {%endfor%}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <h4>Factura PDF</h4>
+            {%for file in post.bill_pdf.files%}
+              <a href="{{url_for('bills.download_file', file_id = file.id )}}">Descargar PDF</a>
+            {%endfor%}
+          </div>
+          <div class="col">
+            <h4>Imagen de pago de Cliente</h4>
+            {%for file in post.client_deposit_image.files%}
+            <div class="mb-3">
+              <img src="{{url_for('bills.download_file', file_id = file.id )}}" class="img-fluid" alt="">
+            </div>
+            {%endfor%}
+          </div>
+          <div class="col">
+            <h4>Imagen de pago a empresa</h4>
+            {%for file in post.deposit_image.files%}
+            <div class="mb-3">
+              <img src="{{url_for('bills.download_file', file_id = file.id )}}" class="img-fluid" alt="">
+            </div>
+            {%endfor%}
+          </div>
+        </div>
+        {%if current_user.role.can_edit_bills%}
         <div class="d-flex justify-content-end mb-4">
-          <a class="btn btn-primary float-right" href="{{url_for('edit_post', post_id=post.id)}}">Edit Post</a>
+          <a class="btn btn-primary float-right" href="{{url_for('bills.edit', bill_id=post.id)}}">Editar Movimiento</a>
         </div>
         {%endif%}
-
-        <div class="comment">
-          <!-- Show all the comments on a post -->
-          <ul class="commentList">
-            {%for comment in post.comments:%}
-            <li>
-              <div class="commenterImage">
-                
-                <img src={{ 'comment.author.email' | gravatar }} />
-              </div>
-              <div class="commentText">
-                <p>{{comment.text | safe}}</p>
-                <span class="date sub-text">{{comment.author.name}}</span>
-              </div>
-            </li>
-            {%if current_user.id == 1 %}
-            <a href="{{url_for('delete_comment', comment_id=comment.id) }}">Delete Comment ✘</a>
-            {%endif%}
-            {%endfor%}
-          </ul>
-        </div>
-        <div class="container my-2">
-          <!-- Comments Area -->
-          {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
-          {{render_form(form)}}
-        </div>
       </div>
     </div>
   </div>
 </article>
 
-{% include "footer.html" %} {% endblock %}
+
+{% include "footer.html" %} 

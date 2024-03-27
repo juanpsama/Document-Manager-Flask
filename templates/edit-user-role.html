@@ -1,0 +1,32 @@
+{% include "header.html" %}
+
+<!-- Page Header -->
+<main class="mb-4 mt-5 pt-5 ">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <p class="flash">{{ message }}</p>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{url_for('users.changue_role', user_id = user.id)}}" method="post">
+          <p class="form-label">Selecciona el rol de {{user.name}}:</p>
+          {%for role in roles:%}
+          <input type="radio" id="color1" name="user_role" value="{{role.id}}" class="form-check-input">
+          <label for="color1" class="form-check-label"> {{role.role_title}}</label><br>
+          {%endfor%}
+          
+          <div class="mt-5">
+            <input type="submit" value="Submit" class="btn btn-primary btn-md">
+          </div>
+      </form>      
+      </div>
+    </div>
+  </div>
+</main>
+
+{% include "footer.html" %} 

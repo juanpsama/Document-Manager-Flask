@@ -2,29 +2,174 @@
 include "header.html" %}
 
 <!-- Page Header -->
-<header class="masthead" style="background-image: url('../static/assets/img/edit-bg.jpg')">
+<!-- <header class="masthead" style="background-image: url('../static/assets/img/edit-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="page-heading">
           {% if is_edit: %}
-          <h1>Edit Post</h1>
+          <h1>Editar Movimiento</h1>
           {% else: %}
-          <h1>New Post</h1>
+          <h1>Nuevo Movimiento</h1>
           {% endif %}
-          <span class="subheading">You're going to make a great blog post!</span>
+          <span class="subheading">Llena todos los campos para capturar el Movimiento!</span>
         </div>
       </div>
     </div>
   </div>
-</header>
+</header> -->
 
-<main class="mb-4">
+<main class="mb-4 mt-5 pt-5">
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
-        {{ ckeditor.load() }} {{ ckeditor.config(name='body') }} 
-        {{render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+        <form method="POST" class="form-horizontal" action="{{url_for('bills.add_new_bill')}}" enctype="multipart/form-data"
+          role='form' novalidate>
+          {{ form.hidden_tag() }}
+          *{{ form.document_type.label(class="form-label") }}
+          <div role="group" data-toggle="buttons">
+            {% if form.document_type.errors %}
+            {% for subfield in form.document_type %}
+            {{ subfield(class="btn-check is-invalid") }} {{ subfield.label(class = "btn btn-outline-primary mx-1" ) }}
+            {% endfor %}
+            <div class="invalid-feedback">
+              {% for error in form.document_type.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {% for subfield in form.document_type %}
+            {{ subfield(class="btn-check") }} {{ subfield.label(class = "btn btn-outline-primary mx-1" ) }}
+            {% endfor %}
+            {% endif %}
+          </div>
+
+          <div class="form-group my-3">
+            *{{ form.tags.label(class="form-label") }}
+            {% if form.tags.errors %}
+            {{ form.tags(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.tags.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.tags(class="form-control" )}}
+            {% endif %}
+          </div>
+
+          <div class="form-group my-3">
+            *{{ form.bill_date.label(class="form-label") }}
+            {% if form.bill_date.errors %}
+            {{ form.bill_date(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.bill_date.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.bill_date(class="form-control")}}
+            {% endif %}
+          </div>
+
+          <div class="form-group my-3">
+            *{{ form.bill_concept.label(class="form-label") }}
+            {% if form.bill_concept.errors %}
+            {{ form.bill_concept(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.bill_concept.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.bill_concept(class="form-control" )}}
+            {% endif %}
+          </div>
+
+
+          <div class="form-group my-3">
+            *{{ form.description.label(class="form-label") }}
+            {% if form.description.errors %}
+            {{ form.description(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.description.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.description(class="form-control")}}
+            {% endif %}
+          </div>
+
+
+          <div class="form-group my-3">
+            *{{ form.bill_file_pdf.label(class="form-label") }}
+            {% if form.bill_file_pdf.errors %}
+            {{ form.bill_file_pdf(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.bill_file_pdf.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.bill_file_pdf(class="form-control" )}}
+            {% endif %}
+          </div>
+
+          <div class="form-group my-3">
+            *{{ form.payment_date.label(class="form-label") }}
+            {% if form.payment_date.errors %}
+            {{ form.payment_date(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.payment_date.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.payment_date(class="form-control") }}
+            {% endif %}
+          </div>
+
+
+          <div class="form-group my-3">
+            *{{ form.client_file_image.label(class="form-label") }}
+            {% if form.client_file_image.errors %}
+            {{ form.client_file_image(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.client_file_image.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.client_file_image(class="form-control") }}
+            {% endif %}
+          </div>
+
+
+          <div class="form-group my-3">
+            *{{ form.deposit_file_image.label(class="form-label") }}
+            {% if form.deposit_file_image.errors %}
+            {{ form.deposit_file_image(class="form-control form-control-lg is-invalid") }}
+            <div class="invalid-feedback">
+              {% for error in form.deposit_file_image.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+            {% else %}
+            {{ form.deposit_file_image(class="form-control") }}
+            {% endif %}
+          </div>
+
+
+          <div class="form-group my-3">
+            <div class="d-flex justify-content-start">
+              {{ form.submit(class="btn btn-primary") }}
+              <a href="{{url_for('bills.get_all')}}" class="btn btn-danger mx-3">Cancelar</a>
+            </div>
+          </div>
+
+        </form>
+
       </div>
     </div>
   </div>
