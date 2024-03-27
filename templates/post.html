@@ -42,14 +42,14 @@
           <div class="col">
             <h4>Factura PDF</h4>
             {%for file in post.bill_pdf.files%}
-              <a href="{{url_for('downloadFile', file_id = file.id )}}">Descargar PDF</a>
+              <a href="{{url_for('bills.download_file', file_id = file.id )}}">Descargar PDF</a>
             {%endfor%}
           </div>
           <div class="col">
             <h4>Imagen de pago de Cliente</h4>
             {%for file in post.client_deposit_image.files%}
             <div class="mb-3">
-              <img src="{{url_for('downloadFile', file_id = file.id )}}" class="img-fluid" alt="">
+              <img src="{{url_for('bills.download_file', file_id = file.id )}}" class="img-fluid" alt="">
             </div>
             {%endfor%}
           </div>
@@ -57,14 +57,14 @@
             <h4>Imagen de pago a empresa</h4>
             {%for file in post.deposit_image.files%}
             <div class="mb-3">
-              <img src="{{url_for('downloadFile', file_id = file.id )}}" class="img-fluid" alt="">
+              <img src="{{url_for('bills.download_file', file_id = file.id )}}" class="img-fluid" alt="">
             </div>
             {%endfor%}
           </div>
         </div>
         {%if current_user.role.can_edit_bills%}
         <div class="d-flex justify-content-end mb-4">
-          <a class="btn btn-primary float-right" href="{{url_for('edit_post', bill_id=post.id)}}">Editar Movimiento</a>
+          <a class="btn btn-primary float-right" href="{{url_for('bills.edit', bill_id=post.id)}}">Editar Movimiento</a>
         </div>
         {%endif%}
       </div>

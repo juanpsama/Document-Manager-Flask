@@ -42,7 +42,7 @@
           </a>
           <p class="post-meta">            
             {%if current_user.role.can_delete_tags%}
-            <a href="{{url_for('delete_tag', tag_id = item.id)}}">Eliminar</a>
+            <a href="{{url_for('tags.delete', tag_id = item.id)}}">Eliminar</a>
             {%endif%}
           </p>
         </div>

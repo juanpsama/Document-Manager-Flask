@@ -18,6 +18,14 @@
 <div class="container px-4 px-lg-5 mt-5 pt-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <p class="flash">{{ message }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
         <!-- Post preview-->
         {% for user in all_users %}  
         <div class="post-preview">
@@ -28,12 +36,12 @@
           </a>
           <p class="post-meta">            
             {%if current_user.role.can_edit_users%}    
-            <a href="{{url_for('edit_user', user_id = user.id)}}">Editar</a>
-            <a href="{{url_for('changue_role', user_id = user.id)}}">Cambiar Rol</a>
+            <a href="{{url_for('users.edit_user', user_id = user.id)}}">Editar</a>
+            <a href="{{url_for('users.changue_role', user_id = user.id)}}">Cambiar Rol</a>
             {%endif%}
 
             {%if current_user.role.can_delete_users and user != current_user%}
-            <a href="{{url_for('delete_user', user_id = user.id)}}">Eliminar</a>
+            <a href="{{url_for('users.delete_user', user_id = user.id)}}">Eliminar</a>
             {%endif%}
 
           </p>
@@ -44,7 +52,7 @@
         <!-- New Post -->
         {%if current_user.role.can_create_users%}
         <div class="d-flex justify-content-end mb-4">
-          <a class="btn btn-primary float-right" href="{{url_for('register')}}">Crear nuevo usuario</a>
+          <a class="btn btn-primary float-right" href="{{url_for('auth.register')}}">Crear nuevo usuario</a>
         </div>
         {%endif%}
       </div>

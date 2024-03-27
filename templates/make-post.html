@@ -23,7 +23,7 @@ include "header.html" %}
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
-        <form method="POST" class="form-horizontal" action="{{url_for('add_new_bill')}}" enctype="multipart/form-data"
+        <form method="POST" class="form-horizontal" action="{{url_for('bills.add_new_bill')}}" enctype="multipart/form-data"
           role='form' novalidate>
           {{ form.hidden_tag() }}
           *{{ form.document_type.label(class="form-label") }}
@@ -164,7 +164,7 @@ include "header.html" %}
           <div class="form-group my-3">
             <div class="d-flex justify-content-start">
               {{ form.submit(class="btn btn-primary") }}
-              <a href="{{url_for('get_all_posts')}}" class="btn btn-danger mx-3">Cancelar</a>
+              <a href="{{url_for('bills.get_all')}}" class="btn btn-danger mx-3">Cancelar</a>
             </div>
           </div>
 

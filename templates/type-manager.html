@@ -37,7 +37,7 @@
             <h2 class="post-title">{{item.name}}</h2>
           <p class="post-meta">            
             {%if current_user.role.can_manage_document_types %}
-            <a href="{{url_for('delete_document_type', type_id = item.id)}}">Eliminar</a>
+            <a href="{{url_for('doc_types.delete_document_type', type_id = item.id)}}">Eliminar</a>
             {%endif%}
           </p>
         </div>

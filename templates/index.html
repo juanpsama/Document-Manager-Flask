@@ -9,7 +9,7 @@
       {% for post in all_posts %}
 
       <div class="post-preview">
-        <a href="{{ url_for('show_post', bill_id=post.id) }}">
+        <a href="{{ url_for('bills.show', bill_id=post.id) }}">
           <h2 class="post-title">{{ post.name }}</h2>
           <h3 class="post-subtitle">{{ post.folio }}</h3>
           <h3 class="post-subtitle">{{ post.bill_concept }}</h3>
@@ -19,7 +19,7 @@
           Creado por <a href="#">{{post.author.name}}</a> el {{post.bill_date}}
 
           {%if current_user.role.can_delete_bills %}
-          <a href="{{url_for('delete_bill', post_id=post.id) }}">✘</a>
+          <a href="{{url_for('bills.delete_bill', bill_id=post.id) }}">✘</a>
           {%endif%}
         </p>
       </div>
@@ -30,19 +30,19 @@
       <!-- New Post -->
       {%if current_user.role.can_create_bills %}
       <div class="d-flex justify-content-end mb-4">
-        <a class="btn btn-primary float-right" href="{{url_for('add_new_bill')}}">Nuevo Documento</a>
+        <a class="btn btn-primary float-right" href="{{url_for('bills.add_new_bill')}}">Nuevo Documento</a>
       </div>
       {%endif%}
 
       <!-- Links to other pages -->
       <div class="d-flex justify-content-center my-4">
         {% if all_posts.has_prev %}
-            <a class="btn btn-outline-primary mx-2" href="{{ url_for('get_all_posts', page=all_posts.prev_num) }}">
+            <a class="btn btn-outline-primary mx-2" href="{{ url_for('bills.get_all', page=all_posts.prev_num) }}">
               <i class="fas fa-chevron-left"></i> Anterior
             </a>
         {% endif %}
         {% if all_posts.has_next %}
-            <a class="btn btn-outline-primary mx-2" href="{{ url_for('get_all_posts', page=all_posts.next_num) }}">
+            <a class="btn btn-outline-primary mx-2" href="{{ url_for('bills.get_all', page=all_posts.next_num) }}">
               Siguiente <i class="fas fa-chevron-right"></i>
             </a>
         {% endif %}
