@@ -1,6 +1,8 @@
 #Project specifics
 /static/files
 /instance/posts.db
+/static/files/
+/files
 /.vscode
 # exclude everything
 files/*
