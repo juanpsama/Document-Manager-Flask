@@ -4,8 +4,8 @@ from flask import flash, redirect, url_for, render_template, Blueprint
 from flask_login import login_user, LoginManager, current_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from models import User, Role, db
-from forms import RegisterForm, LoginForm
+from ..models.models import User, Role, db
+from ..forms.forms import RegisterForm, LoginForm
 
 login_manager = LoginManager()
 auth_blueprint = Blueprint('auth', __name__, template_folder = 'templates')
@@ -46,6 +46,7 @@ def permission_required(permission):
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        
         name = form.name.data
         email = form.email.data
         password = form.password.data

@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, url_for, redirect, request, flash
 from jinja2 import TemplateNotFound
 from werkzeug.security import generate_password_hash
 
-from auth import login_required, permission_required
-from models import User, Role, db
-from forms import RegisterForm
+from .auth import login_required, permission_required
+from ..models.models import User, Role, db
+from ..forms.forms import RegisterForm
 
 users_blueprint = Blueprint('users', __name__, template_folder = 'templates')
 

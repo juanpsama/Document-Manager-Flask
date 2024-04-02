@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, abort, url_for, redirect, flash, request, send_from_directory
 from jinja2 import TemplateNotFound
 
-from models import Tag, db
-from forms import  TagForm
-from auth import login_required, permission_required
+from ..models.models import Tag, db
+from ..forms.forms import  TagForm
+from .auth import login_required, permission_required
 
 tags_blueprint = Blueprint('tags', __name__, template_folder = 'templates')
 

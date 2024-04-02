@@ -4,9 +4,13 @@ import os
 from flask import Blueprint, render_template, abort, url_for, redirect, flash, request, send_from_directory
 from jinja2 import TemplateNotFound
 
-from models import Bill, File, FileGroup, DocumentType, Tag, db
-from forms import CreateBillForm
-from auth import login_required, permission_required, current_user
+
+from ..config import APP_ROOT_PATH
+from ..models.models import Bill, File, FileGroup, DocumentType, Tag, db
+from ..forms.forms import CreateBillForm
+from .auth import login_required, permission_required, current_user
+
+
 
 # TODO: Rename to Bills -> Document
 bills_blueprint = Blueprint('bills', __name__, template_folder = 'templates')
@@ -14,10 +18,10 @@ bills_blueprint = Blueprint('bills', __name__, template_folder = 'templates')
 @bills_blueprint.route('/download/<int:file_id>')
 @login_required
 def download_file(file_id):
+    root_path = APP_ROOT_PATH
     filename = db.get_or_404(File, file_id)
-    uploads = bills_blueprint.root_path
     
-    return send_from_directory(uploads, filename.file_url)
+    return send_from_directory(root_path, filename.file_url)
 
 @bills_blueprint.route('/')
 @login_required

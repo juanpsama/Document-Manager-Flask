@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, abort, url_for, redirect, flash
 from jinja2 import TemplateNotFound
 
-from models import Role, db
-from forms import CreateRoleForm
-from auth import login_required, permission_required
+from ..models.models import Role, db
+from ..forms.forms import CreateRoleForm
+from .auth import login_required, permission_required
 
 roles_blueprint = Blueprint('roles', __name__, template_folder = 'templates')
 

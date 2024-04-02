@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, abort, url_for, redirect, flash, request, send_from_directory
 from jinja2 import TemplateNotFound
 
-from models import DocumentType, db
-from forms import  DocumentTypeForm
-from auth import login_required, permission_required
+from ..models.models import DocumentType, db
+from ..forms.forms import  DocumentTypeForm
+from .auth import login_required, permission_required
 
 doc_types_blueprint = Blueprint('doc_types', __name__, template_folder = 'templates')
 
