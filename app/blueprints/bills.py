@@ -7,7 +7,7 @@ from jinja2 import TemplateNotFound
 
 from ..config import APP_ROOT_PATH
 from ..models.models import Bill, File, FileGroup, DocumentType, Tag, db
-from ..forms.forms import CreateBillForm
+from ..forms.forms import CreateBillForm, FilterBillForm
 from .auth import login_required, permission_required, current_user
 
 
@@ -28,12 +28,13 @@ def download_file(file_id):
 @permission_required('can_view_bills')
 def get_all():
     #TODO: render a form to filter between all the documents 
-    page = request.args.get('page', 1, type=int)
+    filter_form = FilterBillForm(request.args)
 
+    page = request.args.get('page', 1, type=int)
     per_page = 10
     bills = Bill.query.order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
-    return render_template("index.html", all_posts=bills)
+    return render_template("index.html", all_posts=bills, filter_form = filter_form)
 
 @bills_blueprint.route("/<int:bill_id>", methods=["GET", "POST"])
 @login_required

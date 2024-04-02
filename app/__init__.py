@@ -42,8 +42,6 @@ def create_app(test_config=None):
         db.create_all()
 
     login_manager.init_app(app) 
-    # TODO: Delete all css that is not used
-    # TODO: Create a blueprint folder where all blueprints will live and add a __init__.py to make it a package
     # Auth 
     app.register_blueprint(auth_blueprint, url_prefix = '/')
     # Roles operations

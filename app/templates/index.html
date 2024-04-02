@@ -1,3 +1,4 @@
+{% from "bootstrap5/form.html" import render_form %} {% block content %} 
 {% include "header.html" %}
 
 
@@ -5,6 +6,8 @@
 <div class="container px-4 px-lg-5 mt-5 pt-5">
   <div class="row gx-4 gx-lg-5 justify-content-center">
     <div class="col-md-10 col-lg-8 col-xl-7">
+      <!--TODO: remake render_form macro to make custome search layout and not send CSRF token -->
+      <!-- {{render_form(filter_form, method = 'GET')}} -->
       <!-- Post preview-->
       {% for post in all_posts %}
 
@@ -54,4 +57,4 @@
 
 
 
-{% include "footer.html" %}
+{% include "footer.html" %}{%endblock%}
