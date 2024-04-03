@@ -6,7 +6,7 @@ from jinja2 import TemplateNotFound
 
 
 from ..config import APP_ROOT_PATH
-from ..models.models import Bill, File, FileGroup, DocumentType, Tag, db
+from ..models.models import Bill, File, FileGroup, DocumentType, Tag, User, db
 from ..forms.forms import CreateBillForm, FilterBillForm
 from .auth import login_required, permission_required, current_user
 
@@ -27,8 +27,18 @@ def download_file(file_id):
 @login_required
 @permission_required('can_view_bills')
 def get_all():
-    #TODO: render a form to filter between all the documents 
+    
     filter_form = FilterBillForm(request.args)
+
+    document_types = db.session.execute(db.select(DocumentType)).scalars().all()
+    tags = db.session.execute(db.select(Tag)).scalars().all()
+    users = db.session.execute(db.select(User)).scalars().all()
+    
+    # Transform tags and document_types to tuple lists to send as options to the form 
+    # based of the database registers
+    filter_form.tags.choices = get_id_name_pair(tags)
+    filter_form.document_type.choices = get_id_name_pair(document_types)
+    filter_form.author.choices = get_id_name_pair(users)
 
     page = request.args.get('page', 1, type=int)
     per_page = 10

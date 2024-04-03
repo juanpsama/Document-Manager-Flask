@@ -1,3 +1,4 @@
+{% from "macros.html" import render_select_field %}   
 {% from "bootstrap5/form.html" import render_form %} {% block content %} 
 {% include "header.html" %}
 
@@ -7,7 +8,25 @@
   <div class="row gx-4 gx-lg-5 justify-content-center">
     <div class="col-md-10 col-lg-8 col-xl-7">
       <!--TODO: remake render_form macro to make custome search layout and not send CSRF token -->
-      <!-- {{render_form(filter_form, method = 'GET')}} -->
+      <!-- {{render_form(filter_form, method='get')}} -->
+
+      <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+          <form class="d-flex" action="" method="get" role="form">
+            
+            {{ filter_form.folio(class="form-control me-2", placeholder = 'Folio') }}
+            <!-- <input class="form-control me-2" type="search" placeholder="Folio" aria-label="Search" name="folio"> -->
+            {{render_select_field(filter_form.document_type)}}
+            {{render_select_field(filter_form.author)}}
+            {{render_select_field(filter_form.tags)}}
+
+            <button class="btn btn-primary" type="submit">Buscar</button>
+
+          </form>
+        </div>
+      </nav>
+      <hr class="my-4" />
+
       <!-- Post preview-->
       {% for post in all_posts %}
 
@@ -20,16 +39,15 @@
 
         <p class="post-meta">
           Creado por <a href="#">{{post.author.name}}</a> el {{post.bill_date}}
-
-          {%if current_user.role.can_delete_bills %}
-          <a href="{{url_for('bills.delete_bill', bill_id=post.id) }}">✘</a>
-          {%endif%}
         </p>
       </div>
-
+      {%if current_user.role.can_delete_bills %}
+      <a class="btn btn-danger" href="{{url_for('bills.delete_bill', bill_id=post.id) }}">Eliminar</a>
+      {%endif%}
       <!-- Divider-->
       <hr class="my-4" />
       {% endfor %}
+
       <!-- New Post -->
       {%if current_user.role.can_create_bills %}
       <div class="d-flex justify-content-end mb-4">

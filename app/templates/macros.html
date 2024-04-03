@@ -14,3 +14,12 @@
     {% endif %}
 </div>
 {% endmacro %}
+
+{% macro render_select_field(field) %}
+<select class="form-select me-2" aria-label="Default select example" id="{{field.id}}" name="{{field.name}}">
+    <option value="-1" selected>{{field.label}}</option>
+    {% for subfield in field %}
+      {{ subfield }}
+    {% endfor %}
+</select>
+{% endmacro %}

@@ -86,12 +86,11 @@ class DocumentTypeForm(FlaskForm):
     submit = SubmitField("Crear Tipo de Documento")
 
 class FilterBillForm(FlaskForm):
-    bill_name = StringField('Nombre')
-    bill_folio = StringField('Folio')
+    folio = StringField('Folio')
 
-    document_type = SelectField('Selecciona una tipo de documento', choices=[('1', '22'), ('1', '22')])
-    bill_author = SelectField('Selecciona un usuario', choices=[('1', '22'), ('1', '22')])
-    tags = SelectField('Selecciona una etiqueta', choices=[('1', '22'), ('1', '22')])
+    document_type = SelectField('Tipo', choices=[])
+    author = SelectField('Usuario', choices=[])
+    tags = SelectField('Etiqueta', choices=[])
 
     submit = SubmitField("Buscar")
 

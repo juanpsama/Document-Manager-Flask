@@ -13,6 +13,7 @@
           *{{ form.document_type.label(class="form-label") }}
           <div role="group" data-toggle="buttons">
             {% if form.document_type.errors %}
+
             {% for subfield in form.document_type %}
             {{ subfield(class="btn-check is-invalid") }} {{ subfield.label(class = "btn btn-outline-primary mx-1" ) }}
             {% endfor %}
@@ -22,9 +23,11 @@
               {% endfor %}
             </div>
             {% else %}
+
             {% for subfield in form.document_type %}
             {{ subfield(class="btn-check") }} {{ subfield.label(class = "btn btn-outline-primary mx-1" ) }}
             {% endfor %}
+            
             {% endif %}
           </div>
 
@@ -45,7 +48,7 @@
           </div>
 
         </form>
-        
+
       </div>
     </div>
   </div>
