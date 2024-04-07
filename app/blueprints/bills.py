@@ -3,7 +3,7 @@ import os
 
 from flask import Blueprint, render_template, abort, url_for, redirect, flash, request, send_from_directory
 from jinja2 import TemplateNotFound
-
+from sqlalchemy import and_, or_
 
 from ..config import APP_ROOT_PATH
 from ..models.models import Bill, File, FileGroup, DocumentType, Tag, User, db
@@ -14,44 +14,6 @@ from .auth import login_required, permission_required, current_user
 
 # TODO: Rename to Bills -> Document
 bills_blueprint = Blueprint('bills', __name__, template_folder = 'templates')
-
-@bills_blueprint.route('/download/<int:file_id>')
-@login_required
-def download_file(file_id):
-    root_path = APP_ROOT_PATH
-    filename = db.get_or_404(File, file_id)
-    
-    return send_from_directory(root_path, filename.file_url)
-
-@bills_blueprint.route('/')
-@login_required
-@permission_required('can_view_bills')
-def get_all():
-    
-    filter_form = FilterBillForm(request.args)
-
-    document_types = db.session.execute(db.select(DocumentType)).scalars().all()
-    tags = db.session.execute(db.select(Tag)).scalars().all()
-    users = db.session.execute(db.select(User)).scalars().all()
-    
-    # Transform tags and document_types to tuple lists to send as options to the form 
-    # based of the database registers
-    filter_form.tags.choices = get_id_name_pair(tags)
-    filter_form.document_type.choices = get_id_name_pair(document_types)
-    filter_form.author.choices = get_id_name_pair(users)
-
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    bills = Bill.query.order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
-
-    return render_template("index.html", all_posts=bills, filter_form = filter_form)
-
-@bills_blueprint.route("/<int:bill_id>", methods=["GET", "POST"])
-@login_required
-@permission_required('can_view_bills')
-def show(bill_id):
-    requested_bill = db.get_or_404(Bill, bill_id)
-    return render_template("post.html", post=requested_bill)
 
 def get_id_name_pair(option_class):
     return [(option.id, option.name) for option in option_class]
@@ -72,7 +34,7 @@ def save_files_into_file_group(files: list) -> FileGroup:
     
     # Save all the files 
     for i in range(len(files)):
-        files[i].save(os.path.join(bills_blueprint.root_path, file_paths[i]))
+        files[i].save(os.path.join(APP_ROOT_PATH, file_paths[i]))
 
     file_group = FileGroup()
     # Store file paths in the database
@@ -84,6 +46,75 @@ def save_files_into_file_group(files: list) -> FileGroup:
         db.session.add(new_file) 
 
     return file_group
+
+def get_filter(filter_form : FilterBillForm):
+    folio = filter_form.folio.data
+    tag_id = filter_form.tags.data
+    author_id = filter_form.author.data
+    document_type_id = filter_form.document_type.data
+
+    condition_folio = Bill.folio.like(f'{folio}%') if folio != None else True
+
+    condition_author = Bill.author_id==author_id if (
+        author_id != None and  int(author_id) > 0
+        ) else True
+    
+    condition_type = Bill.document_type_id==document_type_id if (
+        document_type_id != None and int(document_type_id) > 0
+        ) else True
+    
+    condition_tag = Bill.tags.any(id = tag_id) if (
+        tag_id != None and int(tag_id) > 0
+        ) else True
+
+    filter = and_(condition_type, condition_author, condition_folio, condition_tag)
+
+    print(filter)
+
+    return filter
+
+@bills_blueprint.route('/download/<int:file_id>')
+@login_required
+def download_file(file_id):
+    root_path = APP_ROOT_PATH
+    filename = db.get_or_404(File, file_id)
+    
+    return send_from_directory(root_path, filename.file_url)
+
+@bills_blueprint.route('/')
+@login_required
+@permission_required('can_view_bills')
+def get_all():
+    filter_form = FilterBillForm(request.args)
+
+    document_types = db.session.execute(db.select(DocumentType)).scalars().all()
+    tags = db.session.execute(db.select(Tag)).scalars().all()
+    users = db.session.execute(db.select(User)).scalars().all()
+    
+    # Transform tags and document_types to tuple lists to send as options to the form 
+    # based of the database registers
+    filter_form.tags.choices = get_id_name_pair(tags)
+    filter_form.document_type.choices = get_id_name_pair(document_types)
+    filter_form.author.choices = get_id_name_pair(users)
+    
+    # Get filter for the query
+    filter = get_filter(filter_form)
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    bills = Bill.query.filter(filter).order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    # bills = Bill.query.order_by(Bill.folio.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template("index.html", all_posts=bills, filter_form = filter_form)
+
+@bills_blueprint.route("/<int:bill_id>", methods=["GET", "POST"])
+@login_required
+@permission_required('can_view_bills')
+def show(bill_id):
+    requested_bill = db.get_or_404(Bill, bill_id)
+    return render_template("post.html", post=requested_bill)
+
 
 @bills_blueprint.route("/create", methods=["GET", "POST"])
 @login_required
@@ -101,7 +132,6 @@ def add_new_bill():
     form.document_type.choices = get_id_name_pair(document_types)
 
     if form.validate_on_submit():
-        # TODO: Quit and Refactor naming of all file groups
         # The multiple file field returns a list of files 
         # Assigning all the list to variables
         bill_files_pdf = form.bill_file_pdf.data
