@@ -18,19 +18,18 @@ bills_blueprint = Blueprint('bills', __name__, template_folder = 'templates')
 def get_id_name_pair(option_class):
     return [(option.id, option.name) for option in option_class]
 
-def make_filename(file: File):
+def make_filename(file: File, index: int):
+    # Create filenames based of the original name and the current 
     file_extension = os.path.splitext(file.filename)[1]
     file_name = str(datetime.now()).replace(" ", "_").replace(":",".")
-    filename = f'{file_name}{current_user.id}{file_extension}'
+    filename = f'{index}{file_name}{current_user.id}{file_extension}'
     return filename
 
 def save_files_into_file_group(files: list) -> FileGroup:
-    # TODO: 
-    # Create filenames based of the original name and the current 
     file_paths = [os.path.join(
                     'files/', 
-                    make_filename(file) ) 
-                    for file in files]
+                    make_filename(file, i)) 
+                    for i, file in enumerate(files)]
     
     # Save all the files 
     for i in range(len(files)):
@@ -193,23 +192,32 @@ def edit(bill_id):
         return redirect(url_for("show_post", bill_id=bill.id))
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
+def delete_files_groups(file_group):
+    files = file_group.files
+
+    for file in files:
+        file_full_path = os.path.join(APP_ROOT_PATH, file.file_url)
+        # Check if the file exists, then delete it
+        if os.path.exists(file_full_path):
+
+            print('File deleted at: ')
+            print(file_full_path)
+            
+            os.remove(file_full_path)
+        else:
+            print("The file does not exist")
+
 @bills_blueprint.route("/delete/<int:bill_id>")
 @login_required
 @permission_required('can_delete_bills')
 def delete_bill(bill_id):
-    #TODO: delete also the files associated with the bill
-    # import os
-
-    # # Specify the file path
-    # file_path = "/path/to/your/file.txt"
-
-    # # Check if the file exists, then delete it
-    # if os.path.exists(file_path):
-    #     os.remove(file_path)
-    # else:
-    #     print("The file does not exist")
 
     bill_to_delete = db.get_or_404(Bill, bill_id)
+
+    delete_files_groups(bill_to_delete.bill_pdf)
+    delete_files_groups(bill_to_delete.client_deposit_image)
+    delete_files_groups(bill_to_delete.deposit_image)
+    
     db.session.delete(bill_to_delete)
     db.session.commit()
     return redirect(url_for('bills.get_all'))
