@@ -3,6 +3,10 @@ from sqlalchemy.orm import relationship
 
 from ..extensions import db
 
+class BaseSoftDeletion(db.Model):
+    __abstract__ = True
+    is_active = db.Column(db.Boolean, nullable=False, default = True)
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -24,7 +28,7 @@ class User(UserMixin, db.Model):
         #Method 2. Altenatively use Dictionary Comprehension to do the same thing.
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}   
 
-class Role(db.Model):
+class Role(BaseSoftDeletion):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     role_title = db.Column(db.String(100), unique=True, nullable = False)
@@ -56,11 +60,10 @@ class Role(db.Model):
 
     can_manage_document_types = db.Column(db.Boolean, default=False, nullable=False)
 
-    
     # Relationship to User
     users = relationship("User", back_populates="role")  
 
-class DocumentType(db.Model):
+class DocumentType(BaseSoftDeletion):
     __tablename__ = 'document_types'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -104,7 +107,7 @@ bill_tag = db.Table(
    db.Column('bill_id', db.Integer, db.ForeignKey('bills.id'))
 ) 
 
-class Tag(db.Model):
+class Tag(BaseSoftDeletion):
     __tablename__ = "tags"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)

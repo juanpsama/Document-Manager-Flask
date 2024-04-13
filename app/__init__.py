@@ -3,6 +3,7 @@ import os
 from flask import Flask, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_uploads import configure_uploads
+from flask_migrate import Migrate
 
 # Import your forms from the forms.py
 from .forms.forms import  images
@@ -37,6 +38,7 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 
     db.init_app(app)
+    migrate = Migrate(app, db)
 
     with app.app_context():
         db.create_all()

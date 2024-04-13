@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, abort, url_for, redirect, flash
 from jinja2 import TemplateNotFound
+from sqlalchemy import and_
 
 from ..models.models import Role, db
 from ..forms.forms import CreateRoleForm
@@ -12,7 +13,7 @@ roles_blueprint = Blueprint('roles', __name__, template_folder = 'templates')
 @login_required
 @permission_required('can_view_roles')
 def roles_panel():
-    result = db.session.execute(db.select(Role))
+    result = db.session.execute(db.select(Role).where(Role.is_active != False))
     roles = result.scalars().all()
     return render_template('roles.html', all_roles = roles)
 
@@ -21,7 +22,9 @@ def roles_panel():
 @permission_required('can_delete_roles')
 def delete_role(role_id):
     role_to_delete = db.get_or_404(Role, role_id)
-    db.session.delete(role_to_delete)
+    # Make a soft deletion
+    role_to_delete.is_active = False
+    # db.session.delete(role_to_delete)
     db.session.commit()
     return redirect(url_for('roles.roles_panel'))
 
@@ -30,7 +33,8 @@ def delete_role(role_id):
 def create_role():
     form = CreateRoleForm()
     if form.validate_on_submit():
-        role = db.session.execute(db.select(Role).where(Role.role_title == form.role_title.data)).scalar()
+        role = db.session.execute(db.select(Role).where(and_(Role.role_title == form.role_title.data, Role.is_active != False))).scalar()
+        
         if role:
             flash('Ese nombre de rol ya existe por favor ingresa otro.')
             return redirect(url_for('roles_panel'))
@@ -54,7 +58,8 @@ def create_role():
             can_edit_roles = form.can_edit_roles.data,
             can_delete_roles = form.can_delete_roles.data,
             can_create_roles = form.can_create_roles.data,
-            can_manage_document_types = form.can_manage_document_types.data
+            can_manage_document_types = form.can_manage_document_types.data,
+            is_active = True
         )
         db.session.add(new_role)
         db.session.commit()
