@@ -194,19 +194,27 @@ def edit(bill_id):
 
 def delete_files_groups(file_group):
     files = file_group.files
+    # Deleting file_group from the db
+    db.session.delete(file_group)
 
     for file in files:
+        # Deleting file from the db
+        db.session.delete(file)
         file_full_path = os.path.join(APP_ROOT_PATH, file.file_url)
+
         # Check if the file exists, then delete it
         if os.path.exists(file_full_path):
 
             print('File deleted at: ')
             print(file_full_path)
-            
+
+            # Deleting from the directory
             os.remove(file_full_path)
         else:
             print("The file does not exist")
 
+    db.session.commit()
+    
 @bills_blueprint.route("/delete/<int:bill_id>")
 @login_required
 @permission_required('can_delete_bills')

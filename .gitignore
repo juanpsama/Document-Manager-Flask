@@ -3,6 +3,8 @@
 files/*
 instance/
 venv/
+db_to_sql.py
+dump.sql
 
 # exception to the rule
 !files/.gitkeep 
