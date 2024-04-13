@@ -17,7 +17,7 @@ def changue_role(user_id):
     user = db.get_or_404(User, user_id)
 
     # Get all the roles available
-    result = db.session.execute(db.select(Role))
+    result = db.session.execute(db.select(Role).where(Role.is_active))
     roles = result.scalars().all()
     if request.method == 'POST':
         # Role selected by the user

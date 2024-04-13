@@ -122,8 +122,8 @@ def show(bill_id):
 def add_new_bill():
     form = CreateBillForm()
     
-    document_types = db.session.execute(db.select(DocumentType)).scalars().all()
-    tags = db.session.execute(db.select(Tag)).scalars().all()
+    document_types = db.session.execute(db.select(DocumentType).where(DocumentType.is_active)).scalars().all()
+    tags = db.session.execute(db.select(Tag).where(Tag.is_active)).scalars().all()
     
     # Transform tags and document_types to tuple lists to send as options to the form 
     # based of the database registers

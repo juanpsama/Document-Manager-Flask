@@ -22,6 +22,7 @@ def roles_panel():
 @permission_required('can_delete_roles')
 def delete_role(role_id):
     role_to_delete = db.get_or_404(Role, role_id)
+    
     # Make a soft deletion
     role_to_delete.is_active = False
     # db.session.delete(role_to_delete)
@@ -34,7 +35,7 @@ def create_role():
     form = CreateRoleForm()
     if form.validate_on_submit():
         role = db.session.execute(db.select(Role).where(and_(Role.role_title == form.role_title.data, Role.is_active != False))).scalar()
-        
+
         if role:
             flash('Ese nombre de rol ya existe por favor ingresa otro.')
             return redirect(url_for('roles_panel'))

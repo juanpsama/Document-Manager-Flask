@@ -19,7 +19,7 @@ def get_post_document_types():
         db.session.add(new_tag)
         db.session.commit()
 
-    result = db.session.execute(db.select(DocumentType))
+    result = db.session.execute(db.select(DocumentType).where(DocumentType.is_active))
     document_type = result.scalars().all()
 
     # Se necesita otro template para cada vista tag y type
@@ -29,7 +29,10 @@ def get_post_document_types():
 @login_required
 @permission_required('can_manage_document_types')
 def delete_document_type(type_id):
-    tag_to_delete = db.get_or_404(DocumentType, type_id)
-    db.session.delete(tag_to_delete)
+    type_to_delete = db.get_or_404(DocumentType, type_id)
+
+    # db.session.delete(tag_to_delete)
+    # Manage soft deletion
+    type_to_delete.is_active = False
     db.session.commit()
     return redirect(url_for('doc_types.get_post_document_types'))
