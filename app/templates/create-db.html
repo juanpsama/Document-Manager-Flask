@@ -1,0 +1,27 @@
+{% from "bootstrap5/form.html" import render_form %} {% block content %}
+{%include "header.html" %}
+
+<main class="mb-4 mt-5 pt-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <p class="flash">{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+        <!-- Title and Explanation -->
+        <h1>Base de Datos No Encontrada</h1>
+        <p class="lead">Parece que no existe una base de datos configurada o no hay un usuario administrador asociado. Por favor, complete el formulario a continuación para crear y configurar una nueva base de datos con un usuario administrador.</p>
+        
+        <!-- Form -->
+        {{render_form(form)}}
+      </div>
+    </div>
+  </div>
+</main>
+
+{% include "footer.html" %} {% endblock %}
