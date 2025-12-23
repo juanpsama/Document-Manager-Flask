@@ -1,9 +1,9 @@
-import os 
-
 from flask import Flask, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_uploads import configure_uploads
 from flask_migrate import Migrate
+
+from app.models.models import test_db_integrity
 
 # Import your forms from the forms.py
 from .forms.forms import  images
@@ -22,6 +22,7 @@ from .blueprints.users import users_blueprint
 from .blueprints.bills import bills_blueprint
 from .blueprints.doc_types import doc_types_blueprint
 from .blueprints.tags import tags_blueprint
+from .blueprints.create_db import db_blueprint
 
 def create_app(test_config=None):
     # create and configure the app
@@ -38,14 +39,16 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_DATABASE_URI'] = DB_URL
 
     db.init_app(app)
-    migrate = Migrate(app, db)
+    Migrate(app, db)
 
     with app.app_context():
         db.create_all()
 
     login_manager.init_app(app) 
     # Auth 
-    app.register_blueprint(auth_blueprint, url_prefix = '/')
+    app.register_blueprint(auth_blueprint, url_prefix = '/auth')
+
+    app.register_blueprint(db_blueprint, url_prefix = '/db')
     # Roles operations
     app.register_blueprint(roles_blueprint, url_prefix = '/roles')
     # User
@@ -59,6 +62,8 @@ def create_app(test_config=None):
 
     @app.route('/')
     def redirect_main():
+        if not test_db_integrity():
+            return redirect(url_for('db.create_db'))
         return redirect(url_for('auth.login'))
     
     return app
