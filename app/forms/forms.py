@@ -85,6 +85,12 @@ class DocumentTypeForm(FlaskForm):
     name = StringField('Nuevo tipo de documento', validators=[DataRequired()])
     submit = SubmitField("Crear Tipo de Documento")
 
+class FillDatabaseForm(FlaskForm):
+    email = StringField("Correo", validators=[DataRequired(), Email()])
+    username = StringField('Nombre de usuario', validators=[DataRequired()])
+    password = PasswordField('Contraseña', validators=[DataRequired()])
+    submit = SubmitField("Enviar")
+
 class FilterBillForm(FlaskForm):
     folio = StringField('Folio')
 
