@@ -16,7 +16,6 @@ def redirect_unauthorized():
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    #return 'goog'
     return redirect_unauthorized()
 
 # Create a user_loader callback
@@ -24,7 +23,6 @@ def unauthorized():
 def load_user(user_id):
     return db.get_or_404(User, user_id)
 
-#TODO: this is not tested, should be tested 
 def permission_required(permission):
     def decorator(f):
         @wraps(f)
@@ -52,10 +50,22 @@ def register():
         password = form.password.data
         user = db.session.execute(db.select(User).where(User.email == email)).scalar()
         if user:
-            flash('Ese email ya existe porfavor log in.')
+            flash('Ese email ya existe porfavor inicia sesion.')
             return redirect(url_for('auth.login'))
 
         user_role = db.session.execute(db.select(Role).where(Role.role_title == 'user')).scalar()
+     
+        # If user role does not exist, create it
+        if not user_role:
+            user_role = Role(
+                role_title = 'user',
+                role_description = 'Default role for new users',
+                can_view_bills = True,
+                can_create_bills = True
+            )
+            db.session.add(user_role)
+            db.session.commit()
+
         # Use Werkzeug to hash the user's password when creating a new user.
         hash_password = generate_password_hash(password=password, method='pbkdf2:sha256', salt_length=8) 
         new_user = User(
