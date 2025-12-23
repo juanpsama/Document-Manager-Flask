@@ -1,4 +1,5 @@
 from flask_login import UserMixin
+from sqlalchemy import text
 from sqlalchemy.orm import relationship
 
 from ..extensions import db
@@ -130,3 +131,16 @@ class FileGroup(db.Model):
     
     #TODO: rename this variable form files to file
     files = relationship("File", back_populates='file_group')
+
+def test_db_integrity():
+    try:
+        # Simple query to test the connection
+        db.session.execute(text('SELECT 1'))
+        if not db.session.execute(db.select(Role)).all():
+            return False
+        if not db.session.execute(db.select(User)).all():
+            return False
+        return True
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return False
