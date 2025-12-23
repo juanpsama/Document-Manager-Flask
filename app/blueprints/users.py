@@ -22,7 +22,6 @@ def changue_role(user_id):
     if request.method == 'POST':
         # Role selected by the user
         role_selected = request.form.get('user_role')
-        print(role_selected)        
         
         user.role = db.get_or_404(Role, role_selected)
         db.session.commit()

@@ -68,8 +68,6 @@ def get_filter(filter_form : FilterBillForm):
 
     filter = and_(condition_type, condition_author, condition_folio, condition_tag)
 
-    print(filter)
-
     return filter
 
 @bills_blueprint.route('/download/<int:file_id>')
